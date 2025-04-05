@@ -1,39 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import recipeData from '../data/data.json'; 
 
 const Favorites = ({ navigation }) => {
-  const { t, i18n } = useTranslation();
-  const currentLang = i18n.language;
 
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState([
+    { id: 1, name: 'Apple', minPrice: 1, midPrice: 2.5, maxPrice: 3, selected: false },
+    { id: 2, name: 'Bread', minPrice: 1, midPrice: 1.5, maxPrice: 2, selected: false },
+    { id: 3, name: 'Chicken', minPrice: 5, midPrice: 7.5, maxPrice: 8, selected: false },
+    { id: 4, name: 'Onion', minPrice: 2, midPrice: 3, maxPrice: 4, selected: false },
+    { id: 5, name: 'Fish Fillets', minPrice: 15, midPrice: 22, maxPrice: 25, selected: false },
+    { id: 6, name: 'Beef', minPrice: 15, midPrice: 21, maxPrice: 25, selected: false },
+    { id: 7, name: 'Cheese', minPrice: 10, midPrice: 16, maxPrice: 20, selected: false },
+    { id: 8, name: 'Wine', minPrice: 7, midPrice: 11, maxPrice: 14, selected: false },
+    { id: 9, name: 'Banana', minPrice: 1, midPrice: 1.8, maxPrice: 2, selected: false },
+  ]);
+  
   const [recentlyDeleted, setRecentlyDeleted] = useState([]);
   const [showUndoDelete, setShowUndoDelete] = useState(false);
   const [countdownTime, setCountdownTime] = useState(3);
   const timerRef = useRef(null);
 
-  useEffect(() => {
-    const bookmarkedRecipes = recipeData.recipes.filter(recipe => recipe.bookmarked);
-    const allIngredients = bookmarkedRecipes.flatMap(recipe => recipe.ingredients);
-
-    const dedupedIngredients = allIngredients.map((ingredient) => ({
-      id: ingredient.id,
-      name: ingredient.translation?.[currentLang] || ingredient.name,
-      minPrice: ingredient.prices.min,
-      midPrice: ingredient.prices.avg,
-      maxPrice: ingredient.prices.max,
-      selected: false,
-    }));
-
-    setFavorites(dedupedIngredients);
-  }, [currentLang]);
-
   const toggleSelection = (itemId) => {
-    setFavorites(prev =>
-      prev.map(item =>
-        item.id === itemId ? { ...item, selected: !item.selected } : item
+    setFavorites(prevFavorites => 
+      prevFavorites.map(item => 
+        item.id === itemId 
+          ? { ...item, selected: !item.selected } 
+          : item
       )
     );
   };
@@ -42,57 +35,82 @@ const Favorites = ({ navigation }) => {
 
   const handleFindInStore = () => {
     const selectedItems = favorites.filter(item => item.selected);
+    console.log('Finding selected items in store:', selectedItems);
+    
     navigation.navigate('NearbyStores', { items: selectedItems });
   };
-
+  
   const deleteSelectedItems = () => {
     const selectedItems = favorites.filter(item => item.selected);
     setRecentlyDeleted(selectedItems);
-    setFavorites(prev => prev.filter(item => !item.selected));
+    
+    setFavorites(prevFavorites => 
+      prevFavorites.filter(item => !item.selected)
+    );
+
     setShowUndoDelete(true);
     setCountdownTime(5);
+
     startDeleteTimer();
   };
-
+  
   const undoDelete = () => {
-    setFavorites(prev => [...prev, ...recentlyDeleted]);
+
+    setFavorites(prevFavorites => [...prevFavorites, ...recentlyDeleted]);
+    
     setRecentlyDeleted([]);
     setShowUndoDelete(false);
+    
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
   };
-
+  
   const startDeleteTimer = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
     timerRef.current = setInterval(() => {
-      setCountdownTime(prev => {
-        if (prev <= 1) {
+      setCountdownTime(prevTime => {
+        if (prevTime <= 1) {
           clearInterval(timerRef.current);
           timerRef.current = null;
           setShowUndoDelete(false);
           setRecentlyDeleted([]);
           return 0;
         }
-        return prev - 1;
+        return prevTime - 1;
       });
     }, 1000);
   };
-
+  
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
   }, []);
 
+  const clearSelections = () => {
+    setFavorites(prevFavorites => 
+      prevFavorites.map(item => ({ ...item, selected: false }))
+    );
+  };
+
   const renderFavoriteItem = (item) => {
     const progressWidth = ((item.midPrice - item.minPrice) / (item.maxPrice - item.minPrice)) * 100;
-
+    
     return (
       <View key={item.id} style={styles.favoriteItem}>
-        <TouchableOpacity
-          style={[styles.checkbox, item.selected && styles.checkboxSelected]}
+        <TouchableOpacity 
+          style={[
+            styles.checkbox, 
+            item.selected && styles.checkboxSelected
+          ]} 
           onPress={() => toggleSelection(item.id)}
         >
           {item.selected && (
@@ -102,8 +120,13 @@ const Favorites = ({ navigation }) => {
         <Text style={styles.itemName}>{item.name}</Text>
         <View style={styles.sliderContainer}>
           <View style={styles.sliderTrack}>
-            <View
-              style={[styles.sliderProgress, { width: `${progressWidth}%` }]}
+            <View 
+              style={[
+                styles.sliderProgress, 
+                { 
+                  width: `${progressWidth}%`
+                }
+              ]} 
             />
           </View>
           <View style={styles.priceLabels}>
@@ -119,60 +142,67 @@ const Favorites = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>{t('Favoirte btn')}</Text>
-        <Text style={styles.priceNote}>{t('Price tip')}</Text>
+        <Text style={styles.headerTitle}>Favorites</Text>
+        <Text style={styles.priceNote}>* Prices are estimates</Text>
       </View>
-
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+      >
         {favorites.map(renderFavoriteItem)}
       </ScrollView>
-
+      
       {hasSelectedItems && (
         <View style={styles.findInStoreContainer}>
-          <TouchableOpacity style={styles.clearButton} onPress={deleteSelectedItems}>
+          <TouchableOpacity 
+            style={styles.clearButton} 
+            onPress={deleteSelectedItems}
+          >
             <Ionicons name="trash-outline" size={24} color="#666" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.findInStoreButton} onPress={handleFindInStore}>
-            <Text style={styles.findInStoreText}>{t('Find in store')}</Text>
+          <TouchableOpacity 
+            style={styles.findInStoreButton}
+            onPress={handleFindInStore}
+          >
+            <Text style={styles.findInStoreText}>FIND IN STORE</Text>
           </TouchableOpacity>
         </View>
       )}
-
+      
       {showUndoDelete && (
         <View style={styles.undoDeleteContainer}>
           <TouchableOpacity style={styles.undoDeleteButton} onPress={undoDelete}>
             <Ionicons name="arrow-back" size={20} color="black" style={styles.undoIcon} />
-            <Text style={styles.undoDeleteText}>{t('Undo delete')}</Text>
+            <Text style={styles.undoDeleteText}>UNDO DELETE</Text>
           </TouchableOpacity>
           <Text style={styles.countdownText}>{countdownTime} s</Text>
         </View>
       )}
-
+      
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
-          <Ionicons name="home-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>{t('home')}</Text>
+            <Ionicons name="home-outline" size={24} color="#888" />
+            <Text style={styles.tabLabel}>Home</Text>
         </TouchableOpacity>
-
+        
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
-          <Ionicons name="camera-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>{t('translator')}</Text>
+            <Ionicons name="camera-outline" size={24} color="#888" />
+            <Text style={styles.tabLabel}>Translator</Text>
         </TouchableOpacity>
-
+        
         <TouchableOpacity style={styles.tabItem}>
-          <Ionicons name="heart" size={24} color="#4CAF50" />
-          <Text style={styles.tabLabel}>{t('favorite')}</Text>
+            <Ionicons name="heart" size={24} color="#4CAF50" />
+            <Text style={[styles.tabLabel, styles.activeTab]}>Favorites</Text>
         </TouchableOpacity>
-
+        
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
-          <Ionicons name="person-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>{t('profile')}</Text>
+            <Ionicons name="person-outline" size={24} color="#888" />
+            <Text style={styles.tabLabel}>Profile</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

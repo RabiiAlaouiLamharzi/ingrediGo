@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Modal } from 'react-native';
-//import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 
 const NearbyStores = ({ navigation }) => {
@@ -95,7 +95,7 @@ const NearbyStores = ({ navigation }) => {
               <Text style={styles.modalDistance}>{selectedStore.distance}</Text>
             </View>
             
-            {/* <MapView
+            <MapView
               style={styles.modalMap}
               initialRegion={{
                 latitude: selectedStore.latitude,
@@ -121,7 +121,7 @@ const NearbyStores = ({ navigation }) => {
                 strokeColor="#1a73e8"
                 strokeWidth={4}
               />
-            </MapView> */}
+            </MapView>
             
             <View style={styles.ingredientsSection}>
               <Text style={styles.ingredientsSectionTitle}>Included Ingredients</Text>
@@ -199,7 +199,7 @@ const NearbyStores = ({ navigation }) => {
 
   const renderMapView = () => (
     <View style={styles.mapContainer}>
-      {/* <MapView
+      <MapView
         style={styles.map}
         initialRegion={{
           latitude: 48.8584,
@@ -220,7 +220,7 @@ const NearbyStores = ({ navigation }) => {
             onPress={() => openStoreDetails(store)}
           />
         ))}
-      </MapView> */}
+      </MapView>
     </View>
   );
 
