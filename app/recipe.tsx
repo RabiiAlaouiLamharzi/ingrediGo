@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,7 +22,9 @@ const Recipe = () => {
   const route = useRoute();
   const { recipe, ingredient } = route.params;
   const navigation = useNavigation();
-  
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+
   const [bookmarked, setBookmarked] = useState(recipe?.bookmarked || false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -34,10 +37,10 @@ const Recipe = () => {
   } else if (ingredient) {
     initialSelections[ingredient.name] = false;
   }
-  
+
   const [selections, setSelections] = useState(initialSelections);
   const isAnySelected = Object.values(selections).some(value => value === true);
-  
+
   const productImages = [];
   if (recipe?.images) {
     if (recipe.images.main) productImages.push({ uri: recipe.images.main });
@@ -53,11 +56,11 @@ const Recipe = () => {
       [item]: !prev[item]
     }));
   };
-  
+
   const toggleBookmark = () => {
     const newBookmarkState = !bookmarked;
     setBookmarked(newBookmarkState);
-   
+
     if (recipe) {
       navigation.setParams({
         ...route.params,
@@ -71,13 +74,9 @@ const Recipe = () => {
 
   useEffect(() => {
     if (productImages.length <= 1) return;
-  
     const interval = setInterval(() => {
-      setTimeout(() => {
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % productImages.length);
-      });
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % productImages.length);
     }, 3000);
-  
     return () => clearInterval(interval);
   }, [currentImageIndex]);
 
@@ -91,7 +90,7 @@ const Recipe = () => {
     recipe.ingredients.forEach(ing => {
       ingredientsData.push({
         id: ing.name,
-        name: ing.name,
+        name: ing.translation?.[lang] || ing.name,
         min: ing.prices?.min || 0,
         max: ing.prices?.max || 0,
         current: ing.prices?.avg || 0,
@@ -101,7 +100,7 @@ const Recipe = () => {
   } else if (ingredient) {
     ingredientsData.push({
       id: ingredient.name,
-      name: ingredient.name,
+      name: ingredient.translation?.[lang] || ingredient.name,
       min: ingredient.prices?.min || 0,
       max: ingredient.prices?.max || 0,
       current: ingredient.prices?.avg || 0,
@@ -111,14 +110,11 @@ const Recipe = () => {
 
   const renderIngredientItem = ({ item }) => {
     const sliderPosition = getSliderPosition(item.min, item.max, item.current);
-    
+
     return (
       <View style={styles.ingredientRow}>
-        <TouchableOpacity 
-          style={[
-            styles.checkbox,
-            selections[item.id] && styles.checkedBox
-          ]} 
+        <TouchableOpacity
+          style={[styles.checkbox, selections[item.id] && styles.checkedBox]}
           onPress={() => toggleSelection(item.id)}
         >
           {selections[item.id] && (
@@ -129,23 +125,12 @@ const Recipe = () => {
         <View style={styles.priceSliderContainer}>
           <View style={styles.sliderContainer}>
             <View style={styles.sliderTrack}>
-              <View 
-                style={[
-                  styles.sliderFill,
-                  { width: `${sliderPosition}%` }
-                ]} 
-              />
+              <View style={[styles.sliderFill, { width: `${sliderPosition}%` }]} />
             </View>
             <View style={styles.priceLabelsContainer}>
-              <Text style={styles.priceMin}>
-                {item.min}{item.unit}
-              </Text>
-              <Text style={styles.currentPrice}>
-                {item.current}{item.unit}
-              </Text>
-              <Text style={styles.priceMax}>
-                {item.max}{item.unit}
-              </Text>
+              <Text style={styles.priceMin}>{item.min}{item.unit}</Text>
+              <Text style={styles.currentPrice}>{item.current}{item.unit}</Text>
+              <Text style={styles.priceMax}>{item.max}{item.unit}</Text>
             </View>
           </View>
         </View>
@@ -163,117 +148,89 @@ const Recipe = () => {
               style={[styles.headerImage, { opacity: fadeAnim }]}
               resizeMode="cover"
             />
-            
-            <LinearGradient
-              colors={['rgba(0,0,0,0.7)', 'transparent']}
-              style={styles.topGradient}
-            />
-            
-            <LinearGradient
-              colors={['transparent', 'white']}
-              style={styles.bottomGradient}
-            />
-            
+
+            <LinearGradient colors={['rgba(0,0,0,0.7)', 'transparent']} style={styles.topGradient} />
+            <LinearGradient colors={['transparent', 'white']} style={styles.bottomGradient} />
+
             <View style={styles.imageOverlay}>
-              <TouchableOpacity
-                  style={styles.backButton}
-                  onPress={() => navigation.goBack()}
-              >
-                  <Ionicons name="chevron-back" size={24} color="white" />
+              <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                <Ionicons name="chevron-back" size={24} color="white" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.bookmarkButton} onPress={toggleBookmark}>
-                <Ionicons 
-                  name={bookmarked ? "bookmark" : "bookmark-outline"} 
-                  size={24} 
-                  color="white" 
-                />
+                <Ionicons name={bookmarked ? 'bookmark' : 'bookmark-outline'} size={24} color="white" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.textOverlay}>
               <View style={styles.titleRow}>
                 <Text style={styles.title}>
-                  {recipe ? recipe.name.en : ingredient.name}
+                  {recipe ? recipe.name?.[lang] : ingredient.translation?.[lang] || ingredient.name}
                 </Text>
-                
                 {productImages.length > 1 && (
                   <View style={styles.paginationContainer}>
                     {productImages.map((_, index) => (
-                      <View 
+                      <View
                         key={index}
-                        style={[
-                          styles.paginationDot, 
-                          index === currentImageIndex && styles.activeDot
-                        ]} 
+                        style={[styles.paginationDot, index === currentImageIndex && styles.activeDot]}
                       />
                     ))}
                   </View>
                 )}
               </View>
-              
               {recipe?.description && (
-                <Text style={styles.description}>
-                  {recipe.description.en}
-                </Text>
+                <Text style={styles.description}>{recipe.description?.[lang]}</Text>
               )}
             </View>
           </View>
-          
+
           <View style={styles.listContainer}>
-            <Text style={styles.priceDisclaimer}>* Prices are estimates</Text>
-            
+            <Text style={styles.priceDisclaimer}>{t('Price tip')}</Text>
+
             <FlatList
               data={ingredientsData}
               renderItem={renderIngredientItem}
               keyExtractor={item => item.id}
               contentContainerStyle={styles.ingredientsContainer}
               scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
               ListFooterComponent={
-                <TouchableOpacity 
-                  style={[
-                      styles.findButton, 
-                      !isAnySelected && styles.findButtonDisabled
-                  ]}
+                <TouchableOpacity
+                  style={[styles.findButton, !isAnySelected && styles.findButtonDisabled]}
                   disabled={!isAnySelected}
                   onPress={() => navigation.navigate('NearbyStores', {
                     selectedItems: Object.keys(selections).filter(key => selections[key]),
                     ingredientData: ingredientsData
                   })}
                 >
-                  <Text style={styles.findButtonText}>FIND IN STORE</Text>
+                  <Text style={styles.findButtonText}>{t('Find in store')}</Text>
                 </TouchableOpacity>
               }
             />
           </View>
         </ScrollView>
-        
+
         <View style={styles.tabBar}>
           <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
-              <Ionicons name="home" size={24} color="#4CAF50" />
-              <Text style={[styles.tabLabel, styles.activeTab]}>Home</Text>
+            <Ionicons name="home-outline" size={24} color="#888" />
+            <Text style={styles.tabLabel}>{t('home')}</Text>
           </TouchableOpacity>
-          
           <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
-              <Ionicons name="camera-outline" size={24} color="#888" />
-              <Text style={styles.tabLabel}>Translator</Text>
+            <Ionicons name="camera-outline" size={24} color="#888" />
+            <Text style={styles.tabLabel}>{t('translator')}</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.tabItem}>
-              <Ionicons name="heart-outline" size={24} color="#888" />
-              <Text style={styles.tabLabel}>Favorites</Text>
+          <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Favorites')}>
+            <Ionicons name="heart" size={24} color="#4CAF50" />
+            <Text style={[styles.tabLabel, styles.activeTab]}>{t('favorite')}</Text>
           </TouchableOpacity>
-          
           <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
-              <Ionicons name="person-outline" size={24} color="#888" />
-              <Text style={styles.tabLabel}>Profile</Text>
+            <Ionicons name="person-outline" size={24} color="#888" />
+            <Text style={styles.tabLabel}>{t('profile')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   mainContainer: {

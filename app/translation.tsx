@@ -2,7 +2,11 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, StatusBar, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useTranslation } from 'react-i18next';
+
 const Translation = ({ navigation }) => {
+    const { t } = useTranslation();
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -17,32 +21,42 @@ const Translation = ({ navigation }) => {
         <View style={styles.imageOverlay} />
         
         <View style={styles.overlayContainer}>
-          <Text style={styles.titleText}>Scan & Translate</Text>
-          <Text style={styles.subtitleText}>
+          {/* <Text style={styles.titleText}>Scan & Translate</Text> */}
+          <Text style={styles.titleText}>{t('translator')}</Text>
+          <Text style={styles.subtitleText}>{t('Scan')}</Text>
+          {/* <Text style={styles.subtitleText}>
             Scan any ingredient with your camera for an instant translation
-          </Text>
+          </Text> */}
         </View>
       </View>
       
-      <View style={styles.tabBar}>
+ <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
             <Ionicons name="home-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Home</Text>
+            {/* <Text style={styles.tabLabel}>Home</Text> */}
+            <Text style={styles.tabLabel}>{t('home')}</Text>
+
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
-            <Ionicons name="camera" size={24} color="#4CAF50" />
-            <Text style={[styles.tabLabel, styles.activeTab]}>Translator</Text>
+            <Ionicons name="camera-outline" size={24} color="#4CAF50" />
+            {/* <Text style={styles.tabLabel}>Translator</Text> */}
+            <Text style={styles.tabLabel}>{t('translator')}</Text>
+
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Favorites')}>
-            <Ionicons name="heart-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Favorites</Text>
+        <TouchableOpacity style={styles.tabItem}>
+            <Ionicons name="heart" size={24} color="#888" />
+            {/* <Text style={[styles.tabLabel, styles.activeTab]}>Favorites</Text> */}
+            <Text style={styles.tabLabel}>{t('favorite')}</Text>
+
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
             <Ionicons name="person-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Profile</Text>
+            {/* <Text style={styles.tabLabel}>Profile</Text> */}
+            <Text style={styles.tabLabel}>{t('profile')}</Text>
+            
         </TouchableOpacity>
       </View>
     </SafeAreaView>
