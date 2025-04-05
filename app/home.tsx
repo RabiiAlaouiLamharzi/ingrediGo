@@ -12,8 +12,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import recipeData from '../data/data.json';
+import { useTranslation } from 'react-i18next';
 
 const Home = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState({ recipes: [], ingredients: [] });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -21,17 +25,15 @@ const Home = ({ navigation }) => {
   const [filteredRecipes, setFilteredRecipes] = useState([]);
   const [bookmarkedRecipes, setBookmarkedRecipes] = useState([]);
 
-  // Initialize data
   useEffect(() => {
-    const categories = [...new Set(recipeData.recipes.map(recipe => recipe.category.en))];
+    const categories = [...new Set(recipeData.recipes.map(recipe => recipe.category[lang]))];
     if (categories.length > 0) {
       setSelectedCategory(categories[0]);
       filterByCategory(categories[0]);
     }
     updateBookmarkedRecipes();
-  }, []);
+  }, [lang]);
 
-  // Update bookmarked recipes whenever recipeData changes
   const updateBookmarkedRecipes = () => {
     const bookmarked = recipeData.recipes.filter(recipe => recipe.bookmarked);
     setBookmarkedRecipes(bookmarked);
@@ -49,17 +51,17 @@ const Home = ({ navigation }) => {
     setSearchQuery(query);
     if (query) {
       const recipeMatches = recipeData.recipes.filter(recipe => 
-        recipe.name.en.toLowerCase().includes(query.toLowerCase())
+        recipe.name[lang].toLowerCase().includes(query.toLowerCase())
       );
-      
+
       const allIngredients = recipeData.recipes.flatMap(recipe => recipe.ingredients);
       const uniqueIngredients = Array.from(new Set(allIngredients.map(i => i.name)))
         .map(name => allIngredients.find(i => i.name === name));
-      
+
       const ingredientMatches = uniqueIngredients.filter(ingredient => 
-        ingredient.name.toLowerCase().includes(query.toLowerCase())
+        ingredient.translation?.[lang]?.toLowerCase().includes(query.toLowerCase())
       );
-      
+
       setSuggestions({
         recipes: recipeMatches,
         ingredients: ingredientMatches
@@ -72,7 +74,7 @@ const Home = ({ navigation }) => {
   const filterByCategory = (category) => {
     setSelectedCategory(category);
     setFilteredRecipes(recipeData.recipes.filter(recipe => 
-      recipe.category.en === category
+      recipe.category[lang] === category
     ));
   };
 
@@ -93,13 +95,13 @@ const Home = ({ navigation }) => {
       onPress={() => handleSuggestionPress(item, section.key === 'ingredients')}
     >
       <Text style={styles.suggestionText}>
-        {section.key === 'recipes' ? item.name.en : item.name}
+        {section.key === 'recipes' ? item.name[lang] : item.translation[lang]}
       </Text>
       {section.key === 'ingredients' && (
         <Text style={styles.suggestionSubtext}>
-          Found in {recipeData.recipes.filter(r => 
+          {t('found_in')} {recipeData.recipes.filter(r => 
             r.ingredients.some(i => i.name === item.name)
-          ).length} recipes
+          ).length} {t('recipes')}
         </Text>
       )}
     </TouchableOpacity>
@@ -116,11 +118,11 @@ const Home = ({ navigation }) => {
         style={styles.recipeImage}
         defaultSource={require('../assets/images/background.png')}
       />
-      <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.name.en}</Text>
+      <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.name[lang]}</Text>
       <View style={styles.recipeDetails}>
         <Text style={styles.priceText}>€{calculateAveragePrice(recipe)}</Text>
         <Text style={styles.dotSeparator}>•</Text>
-        <Text style={styles.cuisineText} numberOfLines={1}>{recipe.category.en}</Text>
+        <Text style={styles.cuisineText} numberOfLines={1}>{recipe.category[lang]}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -136,11 +138,11 @@ const Home = ({ navigation }) => {
         style={styles.recipeImage}
         defaultSource={require('../assets/images/background.png')}
       />
-      <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.name.en}</Text>
+      <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.name[lang]}</Text>
       <View style={styles.recipeDetails}>
         <Text style={styles.priceText}>€{calculateAveragePrice(recipe)}</Text>
         <Text style={styles.dotSeparator}>•</Text>
-        <Text style={styles.cuisineText} numberOfLines={1}>{recipe.category.en}</Text>
+        <Text style={styles.cuisineText} numberOfLines={1}>{recipe.category[lang]}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -151,7 +153,6 @@ const Home = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Header */}
         <View style={styles.headerContainer}>
           <Image 
             source={require('../assets/images/logo.png')} 
@@ -161,12 +162,11 @@ const Home = ({ navigation }) => {
           <Text style={styles.appName}>IngrediGO</Text>
         </View>
 
-        {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Ionicons name="search-outline" size={20} color="#888" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search for recipes or ingredients..."
+            placeholder={t('search_placeholder')}
             placeholderTextColor="#888"
             value={searchQuery}
             onChangeText={handleSearch}
@@ -175,7 +175,6 @@ const Home = ({ navigation }) => {
           />
         </View>
 
-        {/* Search Suggestions */}
         {isSearchFocused && (suggestions.recipes.length > 0 || suggestions.ingredients.length > 0) && (
           <View style={styles.suggestionsContainer}>
             <FlatList
@@ -186,7 +185,7 @@ const Home = ({ navigation }) => {
               renderItem={({ item: section }) => (
                 <View>
                   <Text style={styles.suggestionHeader}>
-                    {section.key === 'recipes' ? 'Recipes' : 'Ingredients'}
+                    {section.key === 'recipes' ? t('recipes') : t('ingredients')}
                   </Text>
                   <FlatList
                     data={section.data}
@@ -200,13 +199,12 @@ const Home = ({ navigation }) => {
           </View>
         )}
 
-        {/* Category Filters */}
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
           style={styles.categoriesContainer}
         >
-          {[...new Set(recipeData.recipes.map(recipe => recipe.category.en))].map((category) => (
+          {[...new Set(recipeData.recipes.map(recipe => recipe.category[lang]))].map((category) => (
             <TouchableOpacity 
               key={category}
               style={[
@@ -225,19 +223,17 @@ const Home = ({ navigation }) => {
           ))}
         </ScrollView>
 
-        {/* Category Recipes */}
         {selectedCategory && (
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>{selectedCategory} Recipes</Text>
+            <Text style={styles.sectionTitle}>{selectedCategory} {t('recipes')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {filteredRecipes.map(renderRecipeCard)}
             </ScrollView>
           </View>
         )}
 
-        {/* Bookmarked Recipes */}
         <View style={styles.sectionContainer2}>
-          <Text style={styles.sectionTitle2}>Bookmarked Recipes</Text>
+          <Text style={styles.sectionTitle2}>{t('bookmarked_recipes')}</Text>
           {bookmarkedRecipes.length > 0 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {bookmarkedRecipes.map(renderRecipeCard2)}
@@ -245,29 +241,31 @@ const Home = ({ navigation }) => {
           ) : (
             <View style={styles.emptyBookmarks}>
               <Ionicons name="bookmark-outline" size={40} color="#888" />
-              <Text style={styles.emptyBookmarksText}>No bookmarked recipes yet</Text>
+              <Text style={styles.emptyBookmarksText}>{t('no_bookmarked_recipes')}</Text>
             </View>
           )}
         </View>
       </ScrollView>
 
-      {/* Bottom Tab Bar */}
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
-          <Ionicons name="home" size={24} color="#4CAF50" />
-          <Text style={[styles.tabLabel, styles.activeTab]}>Home</Text>
+          <Ionicons name="home-outline" size={24} color="#4CAF50" />
+          <Text style={styles.tabLabel}>{t('home')}</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
           <Ionicons name="camera-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>Translator</Text>
+          <Text style={styles.tabLabel}>{t('translator')}</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Favorites')}>
           <Ionicons name="heart-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>Favorites</Text>
+          <Text style={styles.tabLabel}>{t('favorite')}</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
           <Ionicons name="person-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>Profile</Text>
+          <Text style={styles.tabLabel}>{t('profile')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
