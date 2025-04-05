@@ -10,6 +10,8 @@ import Location from './location';
 import Translator from './translation';
 import Favorites from './favorites';
 
+import '../i18n'; 
+
 const Stack = createStackNavigator();
 
 
