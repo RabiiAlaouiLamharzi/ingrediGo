@@ -1,48 +1,189 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, StatusBar, SafeAreaView } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, Image, TouchableOpacity, Pressable, StyleSheet, StatusBar, SafeAreaView, Button, Dimensions } from 'react-native';
+import { CameraView, CameraType } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImageManipulator from 'expo-image-manipulator'; // Fix orientation
+import OcrModule from '../modules/ocr-module'; // Assume this is an OCR module
+import FastTranslator from 'fast-mlkit-translate-text'; // Assume this is translation module
 
 const Translation = ({ navigation }) => {
+  const [facing, setFacing] = useState<CameraType>('back');
+  const [uri, setUri] = useState<string | null>(null);
+  const [mode, setMode] = useState('picture');
+  const [text, setText] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [translatedText, setTranslatedText] = useState<string | null>(null);
+  const cameraRef = useRef<any>(null);
+
+  // Take a picture
+  const takePicture = async () => {
+    setText([]); // Clear old text
+    setTranslatedText(null);
+
+    if (!cameraRef.current) return;
+
+    const photo = await cameraRef.current.takePictureAsync({
+      skipProcessing: true, // Get raw image
+    });
+
+    if (photo?.uri) {
+    await recognizeTextFromImage(photo?.uri);
+    }
+  };
+
+  /// Recognize text from image (OCR)
+const recognizeTextFromImage = async (path: string, languageCode = 'fr') => {
+    setIsLoading(true);
+    try {
+      const recognizedText = await OcrModule.recognizeTextAsync(path, languageCode);
+      setText(recognizedText);
+  
+      // If recognized text is found, attempt translation
+      if (recognizedText && recognizedText.length > 0) {
+        translateAll(recognizedText); // Proceed to translation
+      } else {
+        // If no text is recognized, handle the case and move forward
+        setTranslatedText(null); // Set translated text to null
+        navigation.navigate('Translated', { translatedText: null });
+      }
+    } catch (err) {
+      console.error(err);
+      setText([]);
+      setTranslatedText(null); // If error occurs, reset to null
+      navigation.navigate('Translated', { translatedText: null });
+    }
+    setIsLoading(false);
+  };
+  
+  // Translate recognized text
+  const translateAll = async (recognizedText: string[]) => {
+    try {
+      const sourceLang = 'French'; // Example, could be dynamically detected
+      const targetLang = 'English'; // Desired translation language
+  
+      await FastTranslator.prepare({
+        source: sourceLang,
+        target: targetLang,
+        downloadIfNeeded: false,
+      });
+      if (!FastTranslator.isLanguageDownloaded('French')) {
+        await FastTranslator.downloadLanguageModel('French');
+      }
+      if (!FastTranslator.isLanguageDownloaded('English')) {
+        await FastTranslator.downloadLanguageModel('English');
+      }
+  
+      const translations = await FastTranslator.translate(recognizedText); // Translate as a single string
+      setTranslatedText(translations); // Set as a single string if translation exists
+  
+      console.log("Translations:", translations);
+  
+      // Always navigate to 'Translated' screen, regardless of translation success
+      navigation.navigate('Translated', { translatedText: translations || null });
+    } catch (err) {
+      console.error('Translation error:', err);
+      setTranslatedText(null); // If translation fails, set to null
+  
+      // Always navigate to 'Translated' screen, even on error
+      navigation.navigate('Translated', { translatedText: null });
+    }
+  };
+  
+
+
+  // Style for layout
+  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  const [imageSize, setImageSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
+  const [scaledPositions, setScaledPositions] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (uri) {
+      Image.getSize(uri, (width, height) => {
+        setImageSize({ width, height });
+      });
+    }
+  }, [uri, screenWidth, screenHeight]);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
+
       
       <View style={styles.cameraPreview}>
-        <Image 
-          source={require('../assets/images/logo.png')} 
-          style={styles.backgroundImage}
-          resizeMode="cover"
-        />
-        
-        <View style={styles.imageOverlay} />
-        
-        <View style={styles.overlayContainer}>
-          <Text style={styles.titleText}>Scan & Translate</Text>
-          <Text style={styles.subtitleText}>
-            Scan any ingredient with your camera for an instant translation
-          </Text>
-        </View>
+        {uri ? (
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri }}
+              style={{
+                width:
+                  imageSize.width *
+                  Math.min(screenWidth / imageSize.width, screenHeight / imageSize.height),
+                height:
+                  imageSize.height *
+                  Math.min(screenWidth / imageSize.width, screenHeight / imageSize.height),
+                resizeMode: 'contain',
+              }}
+            />
+            <View style={styles.overlay}>
+              {translatedText ? (
+                <Text
+                  style={{
+                    position: 'absolute',
+                    top: 10,
+                    left: 10,
+                    right: 10,
+                    fontSize: 16,
+                    color: 'black',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    padding: 10,
+                    borderRadius: 5,
+                  }}
+                >
+                  {translatedText}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+        ) : (
+          <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+            <View style={styles.overlayContainer}>
+                <Text style={styles.titleText}>Scan & Translate</Text>
+                <Text style={styles.subtitleText}>
+                    Scan any ingredient with your camera for an instant translation
+                </Text>
+                </View>
+            <View style={styles.buttonContainer}>
+                {/* Camera button for taking picture */}
+                <Pressable onPress={() => takePicture()}>
+                <View style={{ backgroundColor: "transparent", borderWidth: 5, borderColor: "white", width: 65, height: 65, borderRadius: 45, alignItems: "center", justifyContent: "center" }}>
+                    <View style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: "white" }} />
+                </View>
+                </Pressable>
+            </View>
+          </CameraView>
+        )}
       </View>
-      
+
+      {/* Bottom Tab Bar */}
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
-            <Ionicons name="home-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Home</Text>
+          <Ionicons name="home-outline" size={24} color="#888" />
+          <Text style={styles.tabLabel}>Home</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
-            <Ionicons name="camera" size={24} color="#4CAF50" />
-            <Text style={[styles.tabLabel, styles.activeTab]}>Translator</Text>
+          <Ionicons name="camera" size={24} color="#4CAF50" />
+          <Text style={[styles.tabLabel, styles.activeTab]}>Translator</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Favorites')}>
-            <Ionicons name="heart-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Favorites</Text>
+          <Ionicons name="heart-outline" size={24} color="#888" />
+          <Text style={styles.tabLabel}>Favorites</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
-            <Ionicons name="person-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Profile</Text>
+          <Ionicons name="person-outline" size={24} color="#888" />
+          <Text style={styles.tabLabel}>Profile</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -58,22 +199,21 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
-  backgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
+  camera: {
+    flex: 1,
   },
-  imageOverlay: {
+  imageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  overlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   overlayContainer: {
     position: 'absolute',
@@ -94,41 +234,25 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
   },
-  translationBox: {
-    position: 'absolute',
-    bottom: 100,
-    left: 20,
-    right: 20,
-    backgroundColor: 'rgba(0, 255, 0, 0.2)',
-    borderWidth: 2,
-    borderColor: 'green',
-    padding: 10,
-    borderRadius: 10,
+  buttonContainer: {
+    position: "absolute",
+    bottom: 44,
+    left: 0,
+    width: "100%",
+    alignItems: "center", 
+    flexDirection: "row", 
+    justifyContent: "center", 
+    paddingHorizontal: 30,
   },
-  translationText: {
-    color: 'black',
-    textAlign: 'center',
+  button: {
+    flex: 1,
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 24,
     fontWeight: 'bold',
-  },
-  bottomNavigation: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    paddingVertical: 10,
-  },
-  navItem: {
-    alignItems: 'center',
-    opacity: 0.6,
-  },
-  activeNavItem: {
-    alignItems: 'center',
-    opacity: 1,
-  },
-  activeNavText: {
-    color: '#007AFF',
-    marginTop: 5,
+    color: 'white',
   },
   tabBar: {
     flexDirection: 'row',

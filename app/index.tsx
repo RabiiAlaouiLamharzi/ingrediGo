@@ -8,6 +8,7 @@ import NearbyStores from './nearbyStores';
 import Profile from './profile';
 import Location from './location';
 import Translator from './translation';
+import Translated from './translated';
 import Favorites from './favorites';
 
 const Stack = createStackNavigator();
@@ -63,6 +64,11 @@ const App = () => {
         component={Translator}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="Translated"
+        component={Translated}
+        options={{ headerShown: false }}
+        />
       <Stack.Screen
         name="Favorites"
         component={Favorites}
