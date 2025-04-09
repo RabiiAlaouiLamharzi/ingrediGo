@@ -9,10 +9,10 @@ const signIn = ({ navigation }) => {
   return (
     <ImageBackground source={require('../assets/images/background.png')} style={styles.background}>
       <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.button} onPress={handlePress}>
-        <Image source={require('../assets/images/outlook.png')} style={styles.buttonIcon} />
-        <Text style={styles.buttonText}>CONNECT WITH OUTLOOK</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handlePress}>
+          <Image source={require('../assets/images/outlook.png')} style={styles.buttonIcon} />
+          <Text style={styles.buttonText}>CONNECT WITH OUTLOOK</Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );

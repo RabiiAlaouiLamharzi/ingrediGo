@@ -2,12 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, Pressable, StyleSheet, StatusBar, SafeAreaView, Button, Dimensions } from 'react-native';
 import { CameraView, CameraType } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImageManipulator from 'expo-image-manipulator'; // Fix orientation
 import OcrModule from '../modules/ocr-module'; // Assume this is an OCR module
 import FastTranslator from 'fast-mlkit-translate-text'; // Assume this is translation module
 import { useTranslation } from 'react-i18next';
 
 const Translation = ({ navigation }) => {
+  const { t,i18n } = useTranslation();
+  const localLanguage = i18n.localLanguage ?? 'fr';
+
+  const setLocalLanguage = (lang) => {
+    i18n.localLanguage = lang ?? 'fr';
+  };
   const [facing, setFacing] = useState<CameraType>('back');
   const [uri, setUri] = useState<string | null>(null);
   const [mode, setMode] = useState('picture');
@@ -15,8 +20,12 @@ const Translation = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
   const cameraRef = useRef<any>(null);
-  const { i18n } = useTranslation();
   const currentLanguage = i18n.language;
+  const languageMap = {
+    en: 'English',
+    fr: 'French',
+    zh: 'Chinese',
+  };
   
   // Take a picture
   const takePicture = async () => {
@@ -30,16 +39,17 @@ const Translation = ({ navigation }) => {
     });
 
     if (photo?.uri) {
-    await recognizeTextFromImage(photo?.uri);
+    await recognizeTextFromImage(photo?.uri, localLanguage);
     }
   };
 
   /// Recognize text from image (OCR)
-const recognizeTextFromImage = async (path: string, languageCode = 'fr') => {
+const recognizeTextFromImage = async (path: string, languageCode: string) => {
     setIsLoading(true);
     try {
       const recognizedText = await OcrModule.recognizeTextAsync(path, languageCode);
       setText(recognizedText);
+      console.log("Recognized Text:", recognizedText);
   
       // If recognized text is found, attempt translation
       if (recognizedText && recognizedText.length > 0) {
@@ -61,9 +71,8 @@ const recognizeTextFromImage = async (path: string, languageCode = 'fr') => {
   // Translate recognized text
   const translateAll = async (recognizedText: string[]) => {
     try {
-      console.log("Current Lang:", currentLanguage);
-      const sourceLang = 'French'; // Example, could be dynamically detected
-      const targetLang = 'English'; // Desired translation language
+      const sourceLang = languageMap[localLanguage];; // Example, could be dynamically detected
+      const targetLang = languageMap[currentLanguage];; // Desired translation language
   
       await FastTranslator.prepare({
         source: sourceLang,
@@ -75,6 +84,9 @@ const recognizeTextFromImage = async (path: string, languageCode = 'fr') => {
       }
       if (!FastTranslator.isLanguageDownloaded('English')) {
         await FastTranslator.downloadLanguageModel('English');
+      }
+      if (!FastTranslator.isLanguageDownloaded('Chinese')) {
+        await FastTranslator.downloadLanguageModel('Chinese');
       }
   
       const translations = await FastTranslator.translate(recognizedText); // Translate as a single string
@@ -151,11 +163,14 @@ const recognizeTextFromImage = async (path: string, languageCode = 'fr') => {
         ) : (
           <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
             <View style={styles.overlayContainer}>
-                <Text style={styles.titleText}>Scan & Translate</Text>
+                <Text style={styles.titleText}>{t('translator')}</Text>
                 <Text style={styles.subtitleText}>
-                    Scan any ingredient with your camera for an instant translation
+                {t('Scan')}
                 </Text>
+                <Text style={styles.subtitleText}>{localLanguage+ " -> "+currentLanguage}</Text>
+
                 </View>
+                
             <View style={styles.buttonContainer}>
                 {/* Camera button for taking picture */}
                 <Pressable onPress={() => takePicture()}>
@@ -167,27 +182,34 @@ const recognizeTextFromImage = async (path: string, languageCode = 'fr') => {
           </CameraView>
         )}
       </View>
-
-      {/* Bottom Tab Bar */}
-      <View style={styles.tabBar}>
+      
+ <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
-          <Ionicons name="home-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>Home</Text>
+            <Ionicons name="home-outline" size={24} color="#888" />
+            {/* <Text style={styles.tabLabel}>Home</Text> */}
+            <Text style={styles.tabLabel}>{t('home')}</Text>
+
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
-          <Ionicons name="camera" size={24} color="#4CAF50" />
-          <Text style={[styles.tabLabel, styles.activeTab]}>Translator</Text>
-        </TouchableOpacity>
+            <Ionicons name="camera-outline" size={24} color="#4CAF50" />
+            {/* <Text style={styles.tabLabel}>Translator</Text> */}
+            <Text style={styles.tabLabel}>{t('translator')}</Text>
 
-        <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Favorites')}>
-          <Ionicons name="heart-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>Favorites</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.tabItem}>
+            <Ionicons name="heart" size={24} color="#888" />
+            {/* <Text style={[styles.tabLabel, styles.activeTab]}>Favorites</Text> */}
+            <Text style={styles.tabLabel}>{t('favorite')}</Text>
+
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
-          <Ionicons name="person-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>Profile</Text>
+            <Ionicons name="person-outline" size={24} color="#888" />
+            {/* <Text style={styles.tabLabel}>Profile</Text> */}
+            <Text style={styles.tabLabel}>{t('profile')}</Text>
+            
         </TouchableOpacity>
       </View>
     </SafeAreaView>

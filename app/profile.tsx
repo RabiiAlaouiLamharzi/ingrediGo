@@ -10,8 +10,12 @@ import { useTranslation } from 'react-i18next';
 const Profile = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const [myLanguage, setMyLanguage] = useState(i18n.language);
-  const [localLanguage, setLocalLanguage] = useState('fr');
+  const localLanguage = i18n.localLanguage ?? 'fr';
 
+  const setLocalLanguage = (lang) => {
+    i18n.localLanguage = lang ?? 'fr';
+  };
+  
   const [showMyLanguageDropdown, setShowMyLanguageDropdown] = useState(false);
   const [showLocalLanguageDropdown, setShowLocalLanguageDropdown] = useState(false);
   const [showDietaryDropdown, setShowDietaryDropdown] = useState(false);
@@ -61,6 +65,9 @@ const Profile = ({ navigation }) => {
   };
 
   useEffect(() => {
+    if (typeof i18n.localLanguage === 'undefined') {
+    i18n.localLanguage = 'fr';
+  }
     const loadData = async () => {
       const savedDietary = await AsyncStorage.getItem('dietaryRestrictions');
       const savedAllergies = await AsyncStorage.getItem('allergies');
