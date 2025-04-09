@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImageManipulator from 'expo-image-manipulator'; // Fix orientation
 import OcrModule from '../modules/ocr-module'; // Assume this is an OCR module
 import FastTranslator from 'fast-mlkit-translate-text'; // Assume this is translation module
+import { useTranslation } from 'react-i18next';
 
 const Translation = ({ navigation }) => {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -14,7 +15,9 @@ const Translation = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
   const cameraRef = useRef<any>(null);
-
+  const { i18n } = useTranslation();
+  const currentLanguage = i18n.language;
+  
   // Take a picture
   const takePicture = async () => {
     setText([]); // Clear old text
@@ -58,6 +61,7 @@ const recognizeTextFromImage = async (path: string, languageCode = 'fr') => {
   // Translate recognized text
   const translateAll = async (recognizedText: string[]) => {
     try {
+      console.log("Current Lang:", currentLanguage);
       const sourceLang = 'French'; // Example, could be dynamically detected
       const targetLang = 'English'; // Desired translation language
   
