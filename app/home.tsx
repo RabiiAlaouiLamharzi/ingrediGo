@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -8,34 +8,94 @@ import {
   StyleSheet, 
   TouchableOpacity,
   SafeAreaView,
-  FlatList
+  FlatList,
+  ActivityIndicator,
+  RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import recipeData from '../data/data.json';
+import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
+
+const API_URL = 'http://localhost:3000';
 
 const Home = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState({ recipes: [], ingredients: [] });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
   const [filteredRecipes, setFilteredRecipes] = useState([]);
   const [bookmarkedRecipes, setBookmarkedRecipes] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [categoryScrollViewRef, setCategoryScrollViewRef] = useState(null);
 
-  // Initialize data
-  useEffect(() => {
-    const categories = [...new Set(recipeData.recipes.map(recipe => recipe.category.en))];
-    if (categories.length > 0) {
-      setSelectedCategory(categories[0]);
-      filterByCategory(categories[0]);
+  // Fetch data function
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Fetch categories
+      const categories = [...new Set(recipeData.recipes.map(recipe => recipe.category[lang]))];
+      if (categories.length > 0) {
+        setSelectedCategory(categories[0]);
+        setSelectedCategoryIndex(0);
+        filterByCategory(categories[0]);
+      }
+
+      // Fetch bookmarked recipes
+      const response = await fetch(`${API_URL}/bookmarked`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch bookmarked recipes');
+      }
+      
+      const bookmarkedRecipes = await response.json();
+      
+      const normalizedRecipes = bookmarkedRecipes.map(recipe => {
+        if (recipe.category && typeof recipe.category === 'object') {
+          return recipe;
+        }
+        
+        return {
+          ...recipe,
+          category: {
+            en: recipe.category || 'General',
+            fr: recipe.category || 'Général',
+            zh: recipe.category || '一般'
+          }
+        };
+      });
+      
+      setBookmarkedRecipes(normalizedRecipes);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      const localBookmarked = recipeData.recipes.filter(recipe => recipe.bookmarked);
+      setBookmarkedRecipes(localBookmarked);
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
     }
-    updateBookmarkedRecipes();
-  }, []);
+  }, [lang]);
 
-  // Update bookmarked recipes whenever recipeData changes
-  const updateBookmarkedRecipes = () => {
-    const bookmarked = recipeData.recipes.filter(recipe => recipe.bookmarked);
-    setBookmarkedRecipes(bookmarked);
-  };
+  // Refresh function
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchData();
+  }, [fetchData]);
+
+  // Focus effect to refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [fetchData])
+  );
+
+  useEffect(() => {
+    fetchData();
+  }, [lang, fetchData]);
 
   const calculateAveragePrice = (recipe) => {
     if (!recipe.ingredients || recipe.ingredients.length === 0) return '0.00';
@@ -49,17 +109,17 @@ const Home = ({ navigation }) => {
     setSearchQuery(query);
     if (query) {
       const recipeMatches = recipeData.recipes.filter(recipe => 
-        recipe.name.en.toLowerCase().includes(query.toLowerCase())
+        recipe.name[lang].toLowerCase().includes(query.toLowerCase())
       );
-      
+
       const allIngredients = recipeData.recipes.flatMap(recipe => recipe.ingredients);
       const uniqueIngredients = Array.from(new Set(allIngredients.map(i => i.name)))
         .map(name => allIngredients.find(i => i.name === name));
-      
+
       const ingredientMatches = uniqueIngredients.filter(ingredient => 
-        ingredient.name.toLowerCase().includes(query.toLowerCase())
+        ingredient.translation?.[lang]?.toLowerCase().includes(query.toLowerCase())
       );
-      
+
       setSuggestions({
         recipes: recipeMatches,
         ingredients: ingredientMatches
@@ -70,10 +130,20 @@ const Home = ({ navigation }) => {
   };
 
   const filterByCategory = (category) => {
+    const categories = [...new Set(recipeData.recipes.map(recipe => recipe.category[lang]))];
+    const index = categories.indexOf(category);
     setSelectedCategory(category);
+    setSelectedCategoryIndex(index);
     setFilteredRecipes(recipeData.recipes.filter(recipe => 
-      recipe.category.en === category
+      recipe.category[lang] === category
     ));
+    
+    if (categoryScrollViewRef) {
+      categoryScrollViewRef.scrollTo({ 
+        x: index * 110,
+        animated: true 
+      });
+    }
   };
 
   const handleSuggestionPress = (item, isIngredient) => {
@@ -93,13 +163,13 @@ const Home = ({ navigation }) => {
       onPress={() => handleSuggestionPress(item, section.key === 'ingredients')}
     >
       <Text style={styles.suggestionText}>
-        {section.key === 'recipes' ? item.name.en : item.name}
+        {section.key === 'recipes' ? item.name[lang] : item.translation[lang]}
       </Text>
       {section.key === 'ingredients' && (
         <Text style={styles.suggestionSubtext}>
-          Found in {recipeData.recipes.filter(r => 
+          {t('found_in')} {recipeData.recipes.filter(r => 
             r.ingredients.some(i => i.name === item.name)
-          ).length} recipes
+          ).length} {t('recipes')}
         </Text>
       )}
     </TouchableOpacity>
@@ -116,11 +186,15 @@ const Home = ({ navigation }) => {
         style={styles.recipeImage}
         defaultSource={require('../assets/images/background.png')}
       />
-      <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.name.en}</Text>
+      <Text style={styles.recipeTitle} numberOfLines={1}>
+        {recipe.name?.[lang] || recipe.name || t('Unnamed Recipe')}
+      </Text>
       <View style={styles.recipeDetails}>
         <Text style={styles.priceText}>€{calculateAveragePrice(recipe)}</Text>
         <Text style={styles.dotSeparator}>•</Text>
-        <Text style={styles.cuisineText} numberOfLines={1}>{recipe.category.en}</Text>
+        <Text style={styles.cuisineText} numberOfLines={1}>
+          {recipe.category?.[lang] || recipe.category || t('Uncategorized')}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -136,22 +210,35 @@ const Home = ({ navigation }) => {
         style={styles.recipeImage}
         defaultSource={require('../assets/images/background.png')}
       />
-      <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.name.en}</Text>
+      <Text style={styles.recipeTitle} numberOfLines={1}>
+        {recipe.name?.[lang] || recipe.name || t('unnamed_recipe')}
+      </Text>
       <View style={styles.recipeDetails}>
         <Text style={styles.priceText}>€{calculateAveragePrice(recipe)}</Text>
         <Text style={styles.dotSeparator}>•</Text>
-        <Text style={styles.cuisineText} numberOfLines={1}>{recipe.category.en}</Text>
+        <Text style={styles.cuisineText} numberOfLines={1}>
+          {recipe.category?.[lang] || recipe.category || t('uncategorized')}
+        </Text>
       </View>
     </TouchableOpacity>
   );
+
+  const categories = [...new Set(recipeData.recipes.map(recipe => recipe.category[lang]))];
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#4CAF50']}
+            tintColor="#4CAF50"
+          />
+        }
       >
-        {/* Header */}
         <View style={styles.headerContainer}>
           <Image 
             source={require('../assets/images/logo.png')} 
@@ -161,12 +248,11 @@ const Home = ({ navigation }) => {
           <Text style={styles.appName}>IngrediGO</Text>
         </View>
 
-        {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Ionicons name="search-outline" size={20} color="#888" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search for recipes or ingredients..."
+            placeholder={t('search_recipe')}
             placeholderTextColor="#888"
             value={searchQuery}
             onChangeText={handleSearch}
@@ -175,7 +261,6 @@ const Home = ({ navigation }) => {
           />
         </View>
 
-        {/* Search Suggestions */}
         {isSearchFocused && (suggestions.recipes.length > 0 || suggestions.ingredients.length > 0) && (
           <View style={styles.suggestionsContainer}>
             <FlatList
@@ -186,7 +271,7 @@ const Home = ({ navigation }) => {
               renderItem={({ item: section }) => (
                 <View>
                   <Text style={styles.suggestionHeader}>
-                    {section.key === 'recipes' ? 'Recipes' : 'Ingredients'}
+                    {section.key === 'recipes' ? t('recipes') : t('ingredients')}
                   </Text>
                   <FlatList
                     data={section.data}
@@ -200,74 +285,96 @@ const Home = ({ navigation }) => {
           </View>
         )}
 
-        {/* Category Filters */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoriesContainer}
-        >
-          {[...new Set(recipeData.recipes.map(recipe => recipe.category.en))].map((category) => (
-            <TouchableOpacity 
-              key={category}
-              style={[
-                styles.categoryButton,
-                selectedCategory === category && styles.categoryButtonActive
-              ]}
-              onPress={() => filterByCategory(category)}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === category && styles.categoryTextActive
-              ]}>
-                {category.toUpperCase()}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <View style={styles.categoryWrapper}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoriesContainer}
+            ref={ref => setCategoryScrollViewRef(ref)}
+          >
+            {categories.map((category, index) => (
+              <TouchableOpacity 
+                key={category}
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === category && styles.categoryButtonActive,
+                  selectedCategory === category && {
+                    borderTopLeftRadius: 20,
+                    borderTopRightRadius: 20,
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
+                    borderWidth: 1,
+                    borderColor: '#E8F5E9',
+                    borderBottomWidth: 0,
+                  }
+                ]}
+                onPress={() => filterByCategory(category)}
+              >
+                <Text style={[
+                  styles.categoryText,
+                  selectedCategory === category && styles.categoryTextActive
+                ]}>
+                  {category.toUpperCase()}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
-        {/* Category Recipes */}
-        {selectedCategory && (
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>{selectedCategory} Recipes</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {filteredRecipes.map(renderRecipeCard)}
-            </ScrollView>
-          </View>
-        )}
+          {selectedCategory && (
+            <View style={[
+              styles.sectionContainer,
+              {
+                borderTopLeftRadius: selectedCategoryIndex > 0 ? 20 : 0,
+                marginTop: 0,
+                borderWidth: 1,
+                borderColor: '#E8F5E9',
+              }
+            ]}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {filteredRecipes.map(renderRecipeCard)}
+              </ScrollView>
+            </View>
+          )}
+        </View>
 
-        {/* Bookmarked Recipes */}
         <View style={styles.sectionContainer2}>
-          <Text style={styles.sectionTitle2}>Bookmarked Recipes</Text>
-          {bookmarkedRecipes.length > 0 ? (
+          <Text style={styles.sectionTitle2}>{t('bookmarked_recipes')}</Text>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#4CAF50" />
+            </View>
+          ) : bookmarkedRecipes.length > 0 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {bookmarkedRecipes.map(renderRecipeCard2)}
             </ScrollView>
           ) : (
             <View style={styles.emptyBookmarks}>
               <Ionicons name="bookmark-outline" size={40} color="#888" />
-              <Text style={styles.emptyBookmarksText}>No bookmarked recipes yet</Text>
+              <Text style={styles.emptyBookmarksText}>{t('no_bookmarked')}</Text>
             </View>
           )}
         </View>
       </ScrollView>
 
-      {/* Bottom Tab Bar */}
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
           <Ionicons name="home" size={24} color="#4CAF50" />
-          <Text style={[styles.tabLabel, styles.activeTab]}>Home</Text>
+          <Text style={[styles.tabLabel, styles.activeTab]}>{t('home')}</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
           <Ionicons name="camera-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>Translator</Text>
+          <Text style={styles.tabLabel}>{t('translator')}</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Favorites')}>
           <Ionicons name="heart-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>Favorites</Text>
+          <Text style={styles.tabLabel}>{t('favorite')}</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
           <Ionicons name="person-outline" size={24} color="#888" />
-          <Text style={styles.tabLabel}>Profile</Text>
+          <Text style={styles.tabLabel}>{t('profile')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -345,19 +452,28 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
   },
+  categoryWrapper: {
+    marginHorizontal: 20,
+    marginBottom: 25,
+  },
   categoriesContainer: {
-    marginBottom: 20,
-    paddingLeft: 20,
+    flexGrow: 0,
   },
   categoryButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
+    marginBottom: 10,
     borderRadius: 20,
     marginRight: 10,
     backgroundColor: '#F0F0F0',
+    zIndex: 1,
   },
   categoryButtonActive: {
     backgroundColor: '#E8F5E9',
+    paddingBottom: 12,
+    marginBottom: -1,
+    elevation: 1, 
+    shadowColor: 'transparent',
   },
   categoryText: {
     fontSize: 14,
@@ -366,13 +482,13 @@ const styles = StyleSheet.create({
   },
   categoryTextActive: {
     color: '#4CAF50',
+    fontWeight: '600',
   },
   sectionContainer: {
-    marginBottom: 25,
-    marginHorizontal: 20,
-    backgroundColor: '#E9F6EF',
+    backgroundColor: '#E8F5E9',
     padding: 20,
-    borderRadius: 15
+    borderRadius: 20,
+    zIndex: 0,
   },
   sectionContainer2: {
     marginBottom: 25,
@@ -382,7 +498,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 15,
-    color: '#22A45D',
+    color: 'black',
   },
   sectionTitle2: {
     fontSize: 22,
@@ -438,6 +554,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     flexShrink: 1,
+  },
+  loadingContainer: {
+    paddingVertical: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyBookmarks: {
     alignItems: 'center',

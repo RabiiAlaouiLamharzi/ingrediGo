@@ -1,203 +1,317 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
+
+// Your server URL - replace with your actual server address
+const SERVER_URL = 'http://localhost:3000';
 
 const Favorites = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language;
+  const myLanguage = i18n.language;
+  const localLanguage = i18n.localLanguage ?? 'fr';
 
-  const [favorites, setFavorites] = useState([
-    { id: 1, name: 'Apple', minPrice: 1, midPrice: 2.5, maxPrice: 3, selected: false },
-    { id: 2, name: 'Bread', minPrice: 1, midPrice: 1.5, maxPrice: 2, selected: false },
-    { id: 3, name: 'Chicken', minPrice: 5, midPrice: 7.5, maxPrice: 8, selected: false },
-    { id: 4, name: 'Onion', minPrice: 2, midPrice: 3, maxPrice: 4, selected: false },
-    { id: 5, name: 'Fish Fillets', minPrice: 15, midPrice: 22, maxPrice: 25, selected: false },
-    { id: 6, name: 'Beef', minPrice: 15, midPrice: 21, maxPrice: 25, selected: false },
-    { id: 7, name: 'Cheese', minPrice: 10, midPrice: 16, maxPrice: 20, selected: false },
-    { id: 8, name: 'Wine', minPrice: 7, midPrice: 11, maxPrice: 14, selected: false },
-    { id: 9, name: 'Banana', minPrice: 1, midPrice: 1.8, maxPrice: 2, selected: false },
-  ]);
-  
+  const [favorites, setFavorites] = useState([]);
   const [recentlyDeleted, setRecentlyDeleted] = useState([]);
   const [showUndoDelete, setShowUndoDelete] = useState(false);
   const [countdownTime, setCountdownTime] = useState(3);
+  const [isLoading, setIsLoading] = useState(true);
   const timerRef = useRef(null);
 
+  // Load favorites from server
+  const loadFavorites = async () => {
+    setIsLoading(true);
+    try {
+      console.log('Fetching favorites from server...');
+      const response = await fetch(`${SERVER_URL}/favorites`);
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Received favorites data:', data);
+      return data;
+    } catch (error) {
+      console.error('Error loading favorites from server:', error);
+      Alert.alert('Error', 'Failed to load favorites. Please try again.');
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Save favorites to server
+  const saveFavorites = async (items) => {
+    try {
+      console.log('Saving favorites to server:', items);
+      const response = await fetch(`${SERVER_URL}/favorites`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(items),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('Server response:', result);
+      return result;
+    } catch (error) {
+      console.error('Error saving favorites to server:', error);
+      Alert.alert('Error', 'Failed to save changes. Please try again.');
+    }
+  };
+
+  // Use useFocusEffect to reload data every time the screen gains focus
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Favorites screen focused - reloading data');
+      const initializeFavorites = async () => {
+        const loadedFavorites = await loadFavorites();
+        // Add selected property to each item
+        const favoritesWithSelected = loadedFavorites.map(item => ({
+          ...item,
+          selected: false
+        }));
+        setFavorites(favoritesWithSelected);
+      };
+      
+      initializeFavorites();
+      
+      return () => {
+        // Cleanup when screen loses focus
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      };
+    }, [currentLang])
+  );
+
   const toggleSelection = (itemId) => {
-    setFavorites(prevFavorites => 
-      prevFavorites.map(item => 
-        item.id === itemId 
-          ? { ...item, selected: !item.selected } 
-          : item
-      )
+    const updatedFavorites = favorites.map(item =>
+      item.id === itemId ? { ...item, selected: !item.selected } : item
     );
+    setFavorites(updatedFavorites);
   };
 
   const hasSelectedItems = favorites.some(item => item.selected);
 
   const handleFindInStore = () => {
-    const selectedItems = favorites.filter(item => item.selected);
-    console.log('Finding selected items in store:', selectedItems);
-    
-    navigation.navigate('NearbyStores', { items: selectedItems });
-  };
+    const selectedItems = favorites
+      .filter(item => item.selected)
+      .map(item => ({
+        name: item.originalData?.translation?.[myLanguage] || item.name,
+        translation: item.originalData?.translation || { [myLanguage]: item.name },
+        prices: item.prices,
+        stores: item.originalData?.stores || [], // Make sure stores array exists
+        // Include all other necessary fields
+        ...item.originalData || item
+      }));
   
-  const deleteSelectedItems = () => {
-    const selectedItems = favorites.filter(item => item.selected);
-    setRecentlyDeleted(selectedItems);
-    
-    setFavorites(prevFavorites => 
-      prevFavorites.filter(item => !item.selected)
-    );
+    if (selectedItems.length === 0) {
+      Alert.alert(t('No selection'), t('Please select at least one item'));
+      return;
+    }
+  
+    // Create a mock recipe structure that NearbyStores expects
+    const mockRecipe = {
+      id: 'favorites-selection',
+      name: {
+        en: 'Selected Favorites',
+        fr: 'Favoris sélectionnés',
+        zh: '选定的收藏'
+      },
+      ingredients: selectedItems.map(item => ({
+        name: item.name,
+        translation: item.translation,
+        prices: item.prices,
+        stores: item.stores,
+        ...item
+      }))
+    };
+  
+    navigation.navigate('NearbyStores', { 
+      selectedItems: selectedItems.map(item => item.name),
+      ingredientData: selectedItems,
+      recipe: mockRecipe
+    });
+  };
 
+  const deleteSelectedItems = async () => {
+    const selectedItems = favorites.filter(item => item.selected);
+    const updatedFavorites = favorites.filter(item => !item.selected);
+    
+    setRecentlyDeleted(selectedItems);
+    setFavorites(updatedFavorites);
+    await saveFavorites(updatedFavorites);
+    
     setShowUndoDelete(true);
     setCountdownTime(5);
-
     startDeleteTimer();
   };
-  
-  const undoDelete = () => {
 
-    setFavorites(prevFavorites => [...prevFavorites, ...recentlyDeleted]);
+  const undoDelete = async () => {
+    const updatedFavorites = [...favorites, ...recentlyDeleted];
+    setFavorites(updatedFavorites);
+    await saveFavorites(updatedFavorites);
     
     setRecentlyDeleted([]);
     setShowUndoDelete(false);
-    
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
   };
-  
-  const startDeleteTimer = () => {
 
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    
+  const startDeleteTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
-      setCountdownTime(prevTime => {
-        if (prevTime <= 1) {
+      setCountdownTime(prev => {
+        if (prev <= 1) {
           clearInterval(timerRef.current);
           timerRef.current = null;
           setShowUndoDelete(false);
           setRecentlyDeleted([]);
           return 0;
         }
-        return prevTime - 1;
+        return prev - 1;
       });
     }, 1000);
   };
-  
+
   useEffect(() => {
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
-  const clearSelections = () => {
-    setFavorites(prevFavorites => 
-      prevFavorites.map(item => ({ ...item, selected: false }))
-    );
-  };
-
   const renderFavoriteItem = (item) => {
-    const progressWidth = ((item.midPrice - item.minPrice) / (item.maxPrice - item.minPrice)) * 100;
+    // Calculate progress width based on average price between min and max
+    const minPrice = item.prices?.min || 0;
+    const maxPrice = item.prices?.max || 1;
+    const avgPrice = item.prices?.avg || (minPrice + maxPrice) / 2;
     
+    const progressWidth = ((avgPrice - minPrice) / (maxPrice - minPrice)) * 100;
+  
+    // Get the correct name based on user's preferred language
+    let displayName;
+    if (item.originalData) {
+      // If we have the originalData with proper translations
+      displayName = item.originalData.translation?.[myLanguage] || 
+                   item.originalData.name;
+    } else {
+      // Fallback to the simpler structure if originalData doesn't exist
+      displayName = myLanguage === 'en' ? item.name : 
+                   (item.translation || item.name);
+    }
+  
+    // Get local translation (French by default)
+    let localTranslation;
+    if (item.originalData) {
+      localTranslation = item.originalData.translation?.[localLanguage] || 
+                       (localLanguage === 'en' ? item.originalData.name : null);
+    } else {
+      localTranslation = localLanguage === 'fr' ? item.translation : 
+                       (localLanguage === 'en' ? item.name : null);
+    }
+  
     return (
       <View key={item.id} style={styles.favoriteItem}>
-        <TouchableOpacity 
-          style={[
-            styles.checkbox, 
-            item.selected && styles.checkboxSelected
-          ]} 
+        <TouchableOpacity
+          style={[styles.checkbox, item.selected && styles.checkboxSelected]}
           onPress={() => toggleSelection(item.id)}
         >
           {item.selected && (
             <Ionicons name="checkmark" size={22} color="white" />
           )}
         </TouchableOpacity>
-        <Text style={styles.itemName}>{item.name}</Text>
+        
+        <View style={styles.itemNameContainer}>
+          <Text style={styles.itemName}>{displayName}</Text>
+          {localTranslation && localTranslation !== displayName && (
+            <Text style={styles.localTranslation}>{localTranslation}</Text>
+          )}
+        </View>
+        
         <View style={styles.sliderContainer}>
           <View style={styles.sliderTrack}>
-            <View 
-              style={[
-                styles.sliderProgress, 
-                { 
-                  width: `${progressWidth}%`
-                }
-              ]} 
+            <View
+              style={[styles.sliderProgress, { width: `${progressWidth}%` }]}
             />
           </View>
           <View style={styles.priceLabels}>
-            <Text style={styles.priceLabel}>{item.minPrice}€</Text>
-            <Text style={styles.midPriceLabel}>{item.midPrice}€</Text>
-            <Text style={styles.priceLabel}>{item.maxPrice}€</Text>
+            <Text style={styles.priceLabel}>Min: {minPrice}€</Text>
+            <Text style={styles.midPriceLabel}>Avg: {avgPrice}€</Text>
+            <Text style={styles.priceLabel}>Max: {maxPrice}€</Text>
           </View>
         </View>
       </View>
     );
   };
-
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Favorites</Text>
-        <Text style={styles.priceNote}>* Prices are estimates</Text>
+        <Text style={styles.headerTitle}>{t('Favoirte btn')}</Text>
+        <Text style={styles.priceNote}>{t('Price tip')}</Text>
       </View>
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollViewContent}
-      >
-        {favorites.map(renderFavoriteItem)}
+
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
+        {isLoading ? (
+          <Text style={styles.loadingText}>{t('Loading...')}</Text>
+        ) : favorites.length > 0 ? (
+          favorites.map(renderFavoriteItem)
+        ) : (
+          <Text style={styles.noFavoritesText}>{t('No favorites yet')}</Text>
+        )}
       </ScrollView>
-      
+
       {hasSelectedItems && (
         <View style={styles.findInStoreContainer}>
-          <TouchableOpacity 
-            style={styles.clearButton} 
-            onPress={deleteSelectedItems}
-          >
+          <TouchableOpacity style={styles.clearButton} onPress={deleteSelectedItems}>
             <Ionicons name="trash-outline" size={24} color="#666" />
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.findInStoreButton}
-            onPress={handleFindInStore}
-          >
-            <Text style={styles.findInStoreText}>FIND IN STORE</Text>
+          <TouchableOpacity style={styles.findInStoreButton} onPress={handleFindInStore}>
+            <Text style={styles.findInStoreText}>{t('Find in store')}</Text>
           </TouchableOpacity>
         </View>
       )}
-      
+
       {showUndoDelete && (
         <View style={styles.undoDeleteContainer}>
           <TouchableOpacity style={styles.undoDeleteButton} onPress={undoDelete}>
             <Ionicons name="arrow-back" size={20} color="black" style={styles.undoIcon} />
-            <Text style={styles.undoDeleteText}>UNDO DELETE</Text>
+            <Text style={styles.undoDeleteText}>{t('Undo delete')}</Text>
           </TouchableOpacity>
           <Text style={styles.countdownText}>{countdownTime} s</Text>
         </View>
       )}
-      
+
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
-            <Ionicons name="home-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Home</Text>
+          <Ionicons name="home-outline" size={24} color="#888" />
+          <Text style={styles.tabLabel}>{t('home')}</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
-            <Ionicons name="camera-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Translator</Text>
+          <Ionicons name="camera-outline" size={24} color="#888" />
+          <Text style={styles.tabLabel}>{t('translator')}</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.tabItem}>
-            <Ionicons name="heart" size={24} color="#4CAF50" />
-            <Text style={[styles.tabLabel, styles.activeTab]}>Favorites</Text>
+          <Ionicons name="heart" size={24} color="#4CAF50" />
+          <Text style={[styles.tabLabel, styles.activeTab]}>{t('favorite')}</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
-            <Ionicons name="person-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Profile</Text>
+          <Ionicons name="person-outline" size={24} color="#888" />
+          <Text style={styles.tabLabel}>{t('profile')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -225,11 +339,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'gray',
   },
+  loadingText: {
+    textAlign: 'center',
+    marginTop: 100,
+    fontSize: 18,
+    color: '#888',
+  },
+  noFavoritesText: {
+    textAlign: 'center',
+    marginTop: 100,
+    fontSize: 18,
+    color: '#888',
+  },
   favoriteItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 21,
     paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   checkbox: {
     width: 28,
@@ -367,6 +495,19 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     color: '#4CAF50',
+  },
+  itemNameContainer: {
+    flex: 1,
+  },
+  itemName: {
+    fontSize: 20,
+    fontWeight: '300',
+  },
+  localTranslation: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+    fontStyle: 'italic',
   },
 });
 

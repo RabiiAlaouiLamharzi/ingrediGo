@@ -1,0 +1,344 @@
+[
+  {
+    "id": 1,
+    "name": {
+      "en": "Fish & Chips",
+      "fr": "Fish & Chips",
+      "zh": "炸鱼薯条"
+    },
+    "images": {
+      "main": "https://images.unsplash.com/photo-1611599538235-128e54f1250f",
+      "alt1": "https://images.unsplash.com/photo-1706711053549-f52f73a8960c",
+      "alt2": "https://plus.unsplash.com/premium_photo-1694108746045-93234a2a11d2"
+    },
+    "description": {
+      "en": "Crispy battered fish with golden fries, a British classic.",
+      "fr": "Poisson pané croustillant avec des frites dorées, un classique britannique.",
+      "zh": "酥脆炸鱼配金黄薯条，经典英国美食。"
+    },
+    "ingredients": [
+      {
+        "id": 101,
+        "name": "White Fish Fillet (500g)",
+        "translation": {
+          "en": "White Fish Fillet (500g)",
+          "fr": "Filet de poisson blanc (500g)",
+          "zh": "白鱼片 (500克)"
+        },
+        "prices": {
+          "min": 4.5,
+          "max": 8,
+          "avg": 6.25,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "A22",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "aisle": "A31",
+            "available": true
+          },
+          {
+            "name": "Carrefour",
+            "available": false
+          },
+          {
+            "name": "Leclerc",
+            "aisle": "F08",
+            "available": true
+          },
+          {
+            "name": "Intermarché",
+            "available": false
+          },
+          {
+            "name": "Monoprix",
+            "available": false
+          },
+          {
+            "name": "Casino",
+            "aisle": "D05",
+            "available": true
+          },
+          {
+            "name": "Aldi",
+            "available": false
+          }
+        ]
+      },
+      {
+        "id": 102,
+        "name": "Potatoes (1kg)",
+        "translation": {
+          "en": "Potatoes (1kg)",
+          "fr": "Pommes de terre (1kg)",
+          "zh": "土豆 (1公斤)"
+        },
+        "prices": {
+          "min": 1.2,
+          "max": 2.5,
+          "avg": 1.85,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "B05",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "aisle": "A12",
+            "available": true
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "B03",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "available": false
+          },
+          {
+            "name": "Intermarché",
+            "aisle": "C05",
+            "available": true
+          },
+          {
+            "name": "Monoprix",
+            "available": false
+          },
+          {
+            "name": "Casino",
+            "available": false
+          },
+          {
+            "name": "Aldi",
+            "aisle": "A15",
+            "available": true
+          }
+        ]
+      },
+      {
+        "id": 103,
+        "name": "Flour (200g)",
+        "translation": {
+          "en": "Flour (200g)",
+          "fr": "Farine (200g)",
+          "zh": "面粉 (200克)"
+        },
+        "prices": {
+          "min": 0.5,
+          "max": 1.2,
+          "avg": 0.85,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "C10",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "available": false
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "A08",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "aisle": "E05",
+            "available": true
+          },
+          {
+            "name": "Intermarché",
+            "available": false
+          },
+          {
+            "name": "Monoprix",
+            "aisle": "F03",
+            "available": true
+          },
+          {
+            "name": "Casino",
+            "available": false
+          },
+          {
+            "name": "Aldi",
+            "available": false
+          }
+        ]
+      },
+      {
+        "id": 104,
+        "name": "Eggs (2)",
+        "translation": {
+          "en": "Eggs (2)",
+          "fr": "Œufs (2)",
+          "zh": "鸡蛋 (2个)"
+        },
+        "prices": {
+          "min": 0.3,
+          "max": 0.6,
+          "avg": 0.45,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "D03",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "available": false
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "D10",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "aisle": "G02",
+            "available": true
+          },
+          {
+            "name": "Intermarché",
+            "available": false
+          },
+          {
+            "name": "Monoprix",
+            "aisle": "G05",
+            "available": true
+          },
+          {
+            "name": "Casino",
+            "available": false
+          },
+          {
+            "name": "Aldi",
+            "aisle": "C03",
+            "available": true
+          }
+        ]
+      },
+      {
+        "id": 105,
+        "name": "Milk (100ml)",
+        "translation": {
+          "en": "Milk (100ml)",
+          "fr": "Lait (100ml)",
+          "zh": "牛奶 (100毫升)"
+        },
+        "prices": {
+          "min": 0.4,
+          "max": 0.8,
+          "avg": 0.6,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "available": false
+          },
+          {
+            "name": "Auchan",
+            "aisle": "D12",
+            "available": true
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "C07",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "available": false
+          },
+          {
+            "name": "Intermarché",
+            "aisle": "F10",
+            "available": true
+          },
+          {
+            "name": "Monoprix",
+            "aisle": "H02",
+            "available": true
+          },
+          {
+            "name": "Casino",
+            "available": false
+          },
+          {
+            "name": "Aldi",
+            "aisle": "D08",
+            "available": true
+          }
+        ]
+      },
+      {
+        "id": 106,
+        "name": "Vegetable Oil (500ml)",
+        "translation": {
+          "en": "Vegetable Oil (500ml)",
+          "fr": "Huile végétale (500ml)",
+          "zh": "植物油 (500毫升)"
+        },
+        "prices": {
+          "min": 2,
+          "max": 3.5,
+          "avg": 2.75,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "A05",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "available": false
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "B08",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "available": false
+          },
+          {
+            "name": "Intermarché",
+            "aisle": "D05",
+            "available": true
+          },
+          {
+            "name": "Monoprix",
+            "available": false
+          },
+          {
+            "name": "Casino",
+            "aisle": "C12",
+            "available": true
+          },
+          {
+            "name": "Aldi",
+            "available": false
+          }
+        ]
+      }
+    ],
+    "bookmarked": true
+  }
+]
