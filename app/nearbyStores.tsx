@@ -1,70 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Modal } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
-const NearbyStores = ({ navigation }) => {
+const NearbyStores = ({ navigation, route }) => {
+  const { selectedItems, ingredientData, recipe } = route.params;
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
   const [viewMode, setViewMode] = useState('list');
   const [selectedStore, setSelectedStore] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [storeData, setStoreData] = useState([]);
   
-  const storeData = [
-    { 
-      id: 1, 
-      name: 'Lidl', 
-      distance: '500 M', 
-      ingredients: '2/5 Ingredients Available', 
-      dotColor: '#FF5722',
-      latitude: 48.8584,
-      longitude: 2.3005,
-      includedIngredients: ['Eggs', 'Milk'],
-      nonIncludedIngredients: ['Cod', 'Potato', 'Flour']
-    },
-    { 
-      id: 2, 
-      name: 'Casino', 
-      distance: '700 M', 
-      ingredients: '1/5 Ingredients Available', 
-      dotColor: '#FF5722',
-      latitude: 48.8590,
-      longitude: 2.3015,
-      includedIngredients: ['Milk'],
-      nonIncludedIngredients: ['Eggs', 'Cod', 'Potato', 'Flour']
-    },
-    { 
-      id: 3, 
-      name: 'Franprix', 
-      distance: '2.5 KM', 
-      ingredients: '4/5 Ingredients Available', 
-      dotColor: '#FFC107',
-      latitude: 48.8600,
-      longitude: 2.3030,
-      includedIngredients: ['Eggs', 'Milk', 'Potato', 'Flour'],
-      nonIncludedIngredients: ['Cod']
-    },
-    { 
-      id: 4, 
-      name: 'Auchan', 
-      distance: '3 KM', 
-      ingredients: '5/5 Ingredients Available', 
-      dotColor: '#4CAF50',
-      latitude: 48.8610,
-      longitude: 2.3045,
-      includedIngredients: ['Eggs', 'Milk', 'Cod', 'Potato', 'Flour'],
-      nonIncludedIngredients: []
-    },
-    { 
-      id: 5, 
-      name: 'ALDI', 
-      distance: '6.1 KM', 
-      ingredients: '3/5 Ingredients Available', 
-      dotColor: '#FFC107',
-      latitude: 48.8620,
-      longitude: 2.3060,
-      includedIngredients: ['Eggs', 'Milk', 'Potato'],
-      nonIncludedIngredients: ['Cod', 'Flour']
-    },
-  ];
+  const getIngredientTranslation = (ingredientName) => {
+    const ingredient = recipe.ingredients.find(ing => ing.name === ingredientName);
+    return ingredient?.translation?.[lang] || ingredientName;
+  };
+
+  useEffect(() => {
+    const processStoreData = () => {
+      const allStores = new Set();
+      recipe.ingredients.forEach(ingredient => {
+        ingredient.stores.forEach(store => {
+          allStores.add(store.name);
+        });
+      });
+
+      const processedStores = Array.from(allStores).map(storeName => {
+        const includedIngredients = selectedItems.filter(itemName => {
+          const ingredient = recipe.ingredients.find(ing => ing.name === itemName);
+          if (!ingredient) return false;
+          const storeInfo = ingredient.stores.find(s => s.name === storeName);
+          return storeInfo?.available || false;
+        });
+
+        const totalSelected = selectedItems.length;
+        const availableCount = includedIngredients.length;
+        const availabilityPercentage = Math.round((availableCount / totalSelected) * 100);
+
+        return {
+          id: storeName,
+          name: storeName,
+          distance: getRandomDistance(),
+          dotColor: getDotColor(availabilityPercentage),
+          ingredients: {
+            includedIngredients,
+            nonIncludedIngredients: selectedItems.filter(item => !includedIngredients.includes(item)),
+            availabilityPercentage
+          },
+          ingredientsText: `${availableCount}/${totalSelected} ${t('ingredientsAvailable')}`
+        };
+      });
+
+      processedStores.sort((a, b) => b.ingredients.availabilityPercentage - a.ingredients.availabilityPercentage);
+      setStoreData(processedStores);
+    };
+
+    processStoreData();
+  }, [selectedItems, recipe, lang, t]);
+
+  const getRandomDistance = () => {
+    const distances = {
+      en: ['500 M', '700 M', '1.2 KM', '2.5 KM', '3 KM'],
+      fr: ['500 M', '700 M', '1,2 KM', '2,5 KM', '3 KM'],
+      zh: ['500米', '700米', '1.2公里', '2.5公里', '3公里']
+    };
+    return distances[lang][Math.floor(Math.random() * distances[lang].length)];
+  };
+
+  const getDotColor = (percentage) => {
+    if (percentage >= 80) return '#4CAF50';
+    if (percentage >= 50) return '#FFC107';
+    return '#FF5722';
+  };
 
   const openStoreDetails = (store) => {
     setSelectedStore(store);
@@ -95,76 +103,66 @@ const NearbyStores = ({ navigation }) => {
               <Text style={styles.modalDistance}>{selectedStore.distance}</Text>
             </View>
             
-            <MapView
-              style={styles.modalMap}
-              initialRegion={{
-                latitude: selectedStore.latitude,
-                longitude: selectedStore.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-            >
-              <Marker
-                coordinate={{
-                  latitude: selectedStore.latitude,
-                  longitude: selectedStore.longitude,
-                }}
-                title={selectedStore.name}
-              />
-              <Polyline
-                coordinates={[
-                  { latitude: 48.8550, longitude: 2.2980 },
-                  { latitude: 48.8560, longitude: 2.2990 },
-                  { latitude: 48.8570, longitude: 2.3000 },
-                  { latitude: selectedStore.latitude, longitude: selectedStore.longitude },
-                ]}
-                strokeColor="#1a73e8"
-                strokeWidth={4}
-              />
-            </MapView>
-            
             <View style={styles.ingredientsSection}>
-              <Text style={styles.ingredientsSectionTitle}>Included Ingredients</Text>
-              <View style={styles.ingredientsList}>
-                {selectedStore.includedIngredients.map((ingredient, index) => (
-                  <View key={`included-${index}`} style={styles.ingredientItem}>
-                    <View style={styles.checkIcon}>
-                      <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
-                    </View>
-                    <Text style={styles.ingredientName}>{ingredient}</Text>
-                  </View>
-                ))}
-              </View>
+              <Text style={styles.ingredientsSectionTitle}>
+                {t('recipe')}: {recipe?.name?.[lang] || recipe?.name?.en || 'Selected Ingredients'}
+              </Text>
             </View>
             
             <View style={styles.ingredientsSection}>
-              <Text style={styles.ingredientsSectionTitle}>Non-Included Ingredients</Text>
+              <Text style={styles.ingredientsSectionTitle}>{t('availableIngredients')}</Text>
               <View style={styles.ingredientsList}>
-                {selectedStore.nonIncludedIngredients.map((ingredient, index) => (
-                  <View key={`nonincluded-${index}`} style={styles.ingredientItem}>
-                    <View style={styles.crossIcon}>
-                      <Ionicons name="close-circle" size={20} color="#F44336" />
+                {selectedStore.ingredients.includedIngredients.map((ingredientName, index) => {
+                  const ingredient = recipe.ingredients.find(ing => ing.name === ingredientName);
+                  const storeInfo = ingredient?.stores.find(s => s.name === selectedStore.name);
+                  return (
+                    <View key={`included-${index}`} style={styles.ingredientItem}>
+                      <View style={styles.checkIcon}>
+                        <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+                      </View>
+                      <Text style={styles.ingredientName}>
+                        {getIngredientTranslation(ingredientName)}
+                        {storeInfo?.aisle && ` (${t('aisle')}: ${storeInfo.aisle})`}
+                      </Text>
                     </View>
-                    <Text style={styles.ingredientName}>{ingredient}</Text>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             </View>
+            
+            {selectedStore.ingredients.nonIncludedIngredients.length > 0 && (
+              <View style={styles.ingredientsSection}>
+                <Text style={styles.ingredientsSectionTitle}>{t('unavailableIngredients')}</Text>
+                <View style={styles.ingredientsList}>
+                  {selectedStore.ingredients.nonIncludedIngredients.map((ingredientName, index) => (
+                    <View key={`nonincluded-${index}`} style={styles.ingredientItem}>
+                      <View style={styles.crossIcon}>
+                        <Ionicons name="close-circle" size={20} color="#F44336" />
+                      </View>
+                      <Text style={styles.ingredientName}>{getIngredientTranslation(ingredientName)}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
             
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
                 <Ionicons name="close" size={20} color="#777" />
-                <Text style={styles.closeButtonText}>CLOSE</Text>
+                <Text style={styles.closeButtonText}>{t('close')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.confirmButton} 
                 onPress={() => {
-                    closeModal();
-                    setTimeout(() => navigation.navigate('Location'), 300);
-                  }}
+                  closeModal();
+                  navigation.navigate('Location', {
+                    store: selectedStore,
+                    recipe: recipe
+                  });
+                }}
               >
                 <Ionicons name="checkmark" size={20} color="#22A45D" />
-                <Text style={styles.confirmButtonText}>CONFIRM</Text>
+                <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -188,7 +186,7 @@ const NearbyStores = ({ navigation }) => {
             <Text style={styles.storeDistance}>{store.distance}</Text>
             <View style={styles.ingredientsContainer}>
               <View style={[styles.dot, { backgroundColor: store.dotColor }]} />
-              <Text style={styles.storeIngredients}>{store.ingredients}</Text>
+              <Text style={styles.storeIngredients}>{store.ingredientsText}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -199,28 +197,7 @@ const NearbyStores = ({ navigation }) => {
 
   const renderMapView = () => (
     <View style={styles.mapContainer}>
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: 48.8584,
-          longitude: 2.3005,
-          latitudeDelta: 0.04,
-          longitudeDelta: 0.04,
-        }}
-      >
-        {storeData.map((store) => (
-          <Marker
-            key={store.id}
-            coordinate={{
-              latitude: store.latitude,
-              longitude: store.longitude,
-            }}
-            title={store.name}
-            description={store.ingredients}
-            onPress={() => openStoreDetails(store)}
-          />
-        ))}
-      </MapView>
+      <Text style={styles.comingSoonText}>{t('Coming Soon')}</Text>
     </View>
   );
 
@@ -230,7 +207,7 @@ const NearbyStores = ({ navigation }) => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={28} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Nearby Stores</Text>
+        <Text style={styles.headerTitle}>{t('nearbyStores')}</Text>
       </View>
 
       {viewMode === 'list' ? renderListView() : renderMapView()}
@@ -245,7 +222,9 @@ const NearbyStores = ({ navigation }) => {
           onPress={() => setViewMode('list')}
         >
           <MaterialIcons name="format-list-bulleted" size={18} color={viewMode === 'list' ? '#4CAF50' : '#777'} />
-          <Text style={[styles.toggleText, viewMode === 'list' ? styles.activeToggleText : null]}>LIST VIEW</Text>
+          <Text style={[styles.toggleText, viewMode === 'list' ? styles.activeToggleText : null]}>
+            {t('listView')}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -255,29 +234,31 @@ const NearbyStores = ({ navigation }) => {
           onPress={() => setViewMode('map')}
         >
           <FontAwesome name="map-marker" size={18} color={viewMode === 'map' ? '#4CAF50' : '#777'} />
-          <Text style={[styles.toggleText, viewMode === 'map' ? styles.activeToggleText : null]}>MAP VIEW</Text>
+          <Text style={[styles.toggleText, viewMode === 'map' ? styles.activeToggleText : null]}>
+            {t('mapView')}
+          </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
             <Ionicons name="home" size={24} color="#4CAF50" />
-            <Text style={[styles.tabLabel, styles.activeTab]}>Home</Text>
+            <Text style={[styles.tabLabel, styles.activeTab]}>{t('home')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
             <Ionicons name="camera-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Translator</Text>
+            <Text style={styles.tabLabel}>{t('translator')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Favorites')}>
             <Ionicons name="heart-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Favorites</Text>
+            <Text style={styles.tabLabel}>{t('favorites')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
             <Ionicons name="person-outline" size={24} color="#888" />
-            <Text style={styles.tabLabel}>Profile</Text>
+            <Text style={styles.tabLabel}>{t('profile')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -285,6 +266,12 @@ const NearbyStores = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  comingSoonText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 50,
+    color: '#888',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
