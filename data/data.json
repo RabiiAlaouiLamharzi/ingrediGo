@@ -241,7 +241,7 @@
               "currency": "EUR"
             },
             "stores": [
-              { "name": "Lidl", "available": false },
+              { "name": "Lidl", "available": false},
               { "name": "Auchan", "aisle": "C08", "available": true },
               { "name": "Carrefour", "aisle": "D10", "available": true },
               { "name": "Leclerc", "available": false },

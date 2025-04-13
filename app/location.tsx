@@ -13,6 +13,19 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
+const SERVER_URL = 'http://192.168.1.40:3000'; // Adjust based on your server URL
+
+const storeImages = {
+    Lidl: require('../assets/images/lidl.png'),
+    Auchan: require('../assets/images/auchan.jpeg'),
+    Carrefour: require('../assets/images/carrefour.jpg'),
+    Leclerc: require('../assets/images/leclerc.jpg'),
+    Intermarché: require('../assets/images/intermarche.png'),
+    Monoprix: require('../assets/images/monoprix.png'),
+    Casino: require('../assets/images/casino.png'),
+    Aldi: require('../assets/images/aldi.jpg')
+  };
+
 // Mock API service for favorites
 const FavoritesService = {
   // Get all favorites
@@ -20,7 +33,7 @@ const FavoritesService = {
     try {
       // In a real app, you would use fetch here to get data from your API
       // For testing, we'll try to read from a local file
-      const response = await fetch('http://localhost:3000/favorites');
+      const response = await fetch(`${SERVER_URL}/favorites`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -48,7 +61,7 @@ const FavoritesService = {
       const updatedFavorites = [...currentFavorites, favorite];
       
       // Save updated favorites
-      const response = await fetch('http://localhost:3000/favorites', {
+      const response = await fetch(`${SERVER_URL}/favorites`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +90,7 @@ const FavoritesService = {
       const updatedFavorites = currentFavorites.filter(fav => fav.id !== favoriteId);
       
       // Save updated favorites
-      const response = await fetch('http://localhost:3000/favorites', {
+      const response = await fetch(`${SERVER_URL}/favorites`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,14 +178,52 @@ const Location = ({ navigation, route }) => {
   }, [store, recipe, myLanguage, localLanguage, favorites, isLoading]);
 
   const getCategoryFromIngredient = (ingredientName) => {
-    if (ingredientName.toLowerCase().includes('fish')) return t('Fish');
-    if (ingredientName.toLowerCase().includes('potato') || 
-        ingredientName.toLowerCase().includes('vegetable')) return t('Fresh');
-    if (ingredientName.toLowerCase().includes('flour') || 
-        ingredientName.toLowerCase().includes('baking')) return t('Baking');
-    if (ingredientName.toLowerCase().includes('egg') || 
-        ingredientName.toLowerCase().includes('milk') ||
-        ingredientName.toLowerCase().includes('dairy')) return t('Dairy');
+    const name = ingredientName.toLowerCase();
+  
+    if (name.includes('fish')) return t('Fish');
+    if (
+      name.includes('potato') ||
+      name.includes('carrot') ||
+      name.includes('onion') ||
+      name.includes('zucchini') ||
+      name.includes('garlic') 
+    ) return t('Fresh');
+    if (
+      name.includes('flour') ||
+      name.includes('baking')
+    ) return t('Baking');
+    if (
+      name.includes('egg') ||
+      name.includes('milk') ||
+      name.includes('butter') ||
+      name.includes('dairy') ||
+      name.includes('coconut milk')
+    ) return t('Dairy');
+    if (
+      name.includes('lamb') ||
+      name.includes('chicken breast') ||
+      name.includes('chicken thigh') ||
+      name.includes('ground lamb') ||
+      name.includes('beef')
+    ) return t('Meat');
+    if (
+      name.includes('almond') ||
+      name.includes('apricot') ||
+      name.includes('chickpea') ||
+      name.includes('couscous') ||
+      name.includes('tomato paste')
+    ) return t('Pantry');
+    if (
+      name.includes('olive oil') ||
+      name.includes('vegetable oil')
+    ) return t('Oil');
+    if (
+      name.includes('cumin') ||
+      name.includes('ras el hanout') ||
+      name.includes('curry') ||
+      name.includes('worcestershire')
+    ) return t('Spices & Condiments');
+  
     return t('Other');
   };
 
@@ -182,6 +233,10 @@ const Location = ({ navigation, route }) => {
       case t('Baking'): return '#7F500B';
       case t('Fresh'): return '#3B6313';
       case t('Fish'): return '#1378BA';
+      case t('Meat'): return '#C70039';
+      case t('Pantry'): return '#FFBF00';
+      case t('Oil'): return '#FF8C00';
+      case t('Spices & Condiments'): return '#FF6F61';
       default: return '#3B6313';
     }
   };
@@ -313,7 +368,7 @@ const Location = ({ navigation, route }) => {
         <View style={styles.textContainer0}>
           <Text style={styles.dishName}>{recipe?.name?.[myLanguage] || recipe?.name?.en}</Text>  
           <Image 
-            source={require('../assets/images/lidl.png')} 
+            source={storeImages[store.name]} 
             style={styles.logo} 
             resizeMode="contain"
           />
@@ -343,11 +398,11 @@ const Location = ({ navigation, route }) => {
 
             <View style={styles.textContainer2}>
               <Text style={[styles.itemCategory, { backgroundColor: getCategoryColor(ingredient.category) }]}>
-                {t('category')}: {ingredient.category}
+                {t('category')}:{'\n'}{ingredient.category}
               </Text>
-              <Text style={styles.itemLocation}>
+              {/* <Text style={styles.itemLocation}>
                 {t('aisle')}: {ingredient.location}
-              </Text>
+              </Text> */}
             </View>
           </View>
         ))}
@@ -435,6 +490,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#9AA6B2',
+    flex: 0.77,
   },
   textContainer0: {
     flexDirection: 'row',
@@ -445,16 +501,17 @@ const styles = StyleSheet.create({
     paddingBottom: 10
   },
   textContainer: {
-    flex: 0.70,
+    flex: 0.8,
   },
   textContainer2: {
     flexDirection: 'column',
-    flex: 0.85,
+    flex: 0.4,
     justifyContent: 'center',
     marginBottom: 10,
+    paddingLeft: 10,
   },
   itemName: {
-    fontSize: 27,
+    fontSize: 25,
     fontWeight: '200',
     color: 'black',
     marginLeft: 10,
@@ -512,7 +569,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 45,
     height: 45,
-    borderRadius: 100
   },
   noIngredientsContainer: {
     flex: 1,
@@ -551,7 +607,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   heartButton: {
-    padding: 5,
+    padding: 0,
   },
 });
 

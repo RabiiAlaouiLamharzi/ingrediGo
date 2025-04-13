@@ -1,0 +1,1 @@
+../../../../../node_modules/fast-mlkit-translate-text/ios/FastMlkitTranslateText.h

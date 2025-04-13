@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ingredidGo",
-    "slug": "ingredidGo",
+    "name": "ingrediGo",
+    "slug": "ingrediGo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -10,8 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "ios.bundleIdentifier": "com.ingredidgo.app",
-      "bundleIdentifier": "com.vivi1121.ingredidGo"
+      "ios.bundleIdentifier": "com.ingredigo.app",
+      "bundleIdentifier": "com.vivi1121.ingrediGo"
     },
     "android": {
       "adaptiveIcon": {

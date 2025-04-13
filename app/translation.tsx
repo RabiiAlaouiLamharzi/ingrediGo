@@ -163,7 +163,7 @@ const recognizeTextFromImage = async (path: string, languageCode: string) => {
         ) : (
           <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
             <View style={styles.overlayContainer}>
-                <Text style={styles.titleText}>{t('translator')}</Text>
+                <Text style={styles.titleText}>{t('translator_title')}</Text>
                 <Text style={styles.subtitleText}>
                 {t('Scan')}
                 </Text>

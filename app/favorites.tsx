@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 
 // Your server URL - replace with your actual server address
-const SERVER_URL = 'http://localhost:3000';
+const SERVER_URL = 'http://192.168.1.40:3000';
 
 const Favorites = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -400,12 +400,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   priceLabel: {
-    fontSize: 13,
+    fontSize: 11,
     color: 'black',
     fontWeight: '300',
   },
   midPriceLabel: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#4CAF50',
     fontWeight: 'bold',
   },

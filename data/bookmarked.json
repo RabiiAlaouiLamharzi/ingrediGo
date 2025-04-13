@@ -340,5 +340,402 @@
       }
     ],
     "bookmarked": true
+  },
+  {
+    "id": 5,
+    "name": {
+      "en": "Shepherd's Pie",
+      "fr": "Hachis Parmentier",
+      "zh": "牧羊人派"
+    },
+    "images": {
+      "main": "https://plus.unsplash.com/premium_photo-1723770033472-0b0452d98225",
+      "alt1": "https://images.unsplash.com/photo-1664187878525-b8ad94fe569b",
+      "alt2": "https://images.unsplash.com/photo-1609183200197-5a98fb5cb752"
+    },
+    "description": {
+      "en": "Comforting minced lamb topped with creamy mashed potatoes, baked to golden perfection.",
+      "fr": "Hachis d'agneau recouvert d'une purée de pommes de terre onctueuse, gratiné au four.",
+      "zh": "香浓羊肉末上铺奶油土豆泥，烤至金黄酥脆。"
+    },
+    "ingredients": [
+      {
+        "id": 501,
+        "name": "Ground Lamb (500g)",
+        "translation": {
+          "en": "Ground Lamb (500g)",
+          "fr": "Viande d'agneau hachée (500g)",
+          "zh": "羊肉末 (500克)"
+        },
+        "prices": {
+          "min": 6,
+          "max": 9,
+          "avg": 7.5,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "available": false
+          },
+          {
+            "name": "Auchan",
+            "aisle": "D15",
+            "available": true
+          },
+          {
+            "name": "Carrefour",
+            "available": false
+          },
+          {
+            "name": "Leclerc",
+            "aisle": "H10",
+            "available": true
+          },
+          {
+            "name": "Intermarché",
+            "aisle": "F15",
+            "available": true
+          },
+          {
+            "name": "Monoprix",
+            "available": false
+          },
+          {
+            "name": "Casino",
+            "aisle": "E20",
+            "available": true
+          },
+          {
+            "name": "Aldi",
+            "available": false
+          }
+        ]
+      },
+      {
+        "id": 502,
+        "name": "Potatoes (1kg)",
+        "translation": {
+          "en": "Potatoes (1kg)",
+          "fr": "Pommes de terre (1kg)",
+          "zh": "土豆 (1公斤)"
+        },
+        "prices": {
+          "min": 1.2,
+          "max": 2.5,
+          "avg": 1.85,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "B05",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "aisle": "A12",
+            "available": true
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "B03",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "available": false
+          },
+          {
+            "name": "Intermarché",
+            "aisle": "C05",
+            "available": true
+          },
+          {
+            "name": "Monoprix",
+            "available": false
+          },
+          {
+            "name": "Casino",
+            "available": false
+          },
+          {
+            "name": "Aldi",
+            "aisle": "A15",
+            "available": true
+          }
+        ]
+      },
+      {
+        "id": 503,
+        "name": "Onion (1 large)",
+        "translation": {
+          "en": "Onion (1 large)",
+          "fr": "Oignon (1 gros)",
+          "zh": "洋葱 (1个大)"
+        },
+        "prices": {
+          "min": 0.3,
+          "max": 0.7,
+          "avg": 0.5,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "B02",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "aisle": "A05",
+            "available": true
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "B01",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "aisle": "C03",
+            "available": true
+          },
+          {
+            "name": "Intermarché",
+            "available": false
+          },
+          {
+            "name": "Monoprix",
+            "aisle": "D02",
+            "available": true
+          },
+          {
+            "name": "Casino",
+            "available": false
+          },
+          {
+            "name": "Aldi",
+            "aisle": "B03",
+            "available": true
+          }
+        ]
+      },
+      {
+        "id": 504,
+        "name": "Carrots (2)",
+        "translation": {
+          "en": "Carrots (2)",
+          "fr": "Carottes (2)",
+          "zh": "胡萝卜 (2根)"
+        },
+        "prices": {
+          "min": 0.4,
+          "max": 1,
+          "avg": 0.7,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "B03",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "aisle": "A08",
+            "available": true
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "B05",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "available": false
+          },
+          {
+            "name": "Intermarché",
+            "aisle": "C03",
+            "available": true
+          },
+          {
+            "name": "Monoprix",
+            "available": false
+          },
+          {
+            "name": "Casino",
+            "available": false
+          },
+          {
+            "name": "Aldi",
+            "aisle": "A10",
+            "available": true
+          }
+        ]
+      },
+      {
+        "id": 505,
+        "name": "Beef Stock (250ml)",
+        "translation": {
+          "en": "Beef Stock (250ml)",
+          "fr": "Bouillon de bœuf (250ml)",
+          "zh": "牛肉高汤 (250毫升)"
+        },
+        "prices": {
+          "min": 1,
+          "max": 2.2,
+          "avg": 1.6,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "C12",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "available": false
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "D08",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "aisle": "E12",
+            "available": true
+          },
+          {
+            "name": "Intermarché",
+            "available": false
+          },
+          {
+            "name": "Monoprix",
+            "aisle": "F08",
+            "available": true
+          },
+          {
+            "name": "Casino",
+            "available": false
+          },
+          {
+            "name": "Aldi",
+            "available": false
+          }
+        ]
+      },
+      {
+        "id": 506,
+        "name": "Butter (50g)",
+        "translation": {
+          "en": "Butter (50g)",
+          "fr": "Beurre (50g)",
+          "zh": "黄油 (50克)"
+        },
+        "prices": {
+          "min": 0.8,
+          "max": 1.5,
+          "avg": 1.15,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "aisle": "D07",
+            "available": true
+          },
+          {
+            "name": "Auchan",
+            "aisle": "B10",
+            "available": true
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "C10",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "available": false
+          },
+          {
+            "name": "Intermarché",
+            "aisle": "D10",
+            "available": true
+          },
+          {
+            "name": "Monoprix",
+            "available": false
+          },
+          {
+            "name": "Casino",
+            "available": false
+          },
+          {
+            "name": "Aldi",
+            "aisle": "C05",
+            "available": true
+          }
+        ]
+      },
+      {
+        "id": 507,
+        "name": "Worcestershire Sauce (1 tbsp)",
+        "translation": {
+          "en": "Worcestershire Sauce (1 tbsp)",
+          "fr": "Sauce Worcestershire (1 c. à soupe)",
+          "zh": "伍斯特酱 (1汤匙)"
+        },
+        "prices": {
+          "min": 2,
+          "max": 3.5,
+          "avg": 2.75,
+          "currency": "EUR"
+        },
+        "stores": [
+          {
+            "name": "Lidl",
+            "available": false
+          },
+          {
+            "name": "Auchan",
+            "aisle": "E12",
+            "available": true
+          },
+          {
+            "name": "Carrefour",
+            "aisle": "D18",
+            "available": true
+          },
+          {
+            "name": "Leclerc",
+            "available": false
+          },
+          {
+            "name": "Intermarché",
+            "aisle": "F10",
+            "available": true
+          },
+          {
+            "name": "Monoprix",
+            "available": false
+          },
+          {
+            "name": "Casino",
+            "aisle": "F12",
+            "available": true
+          },
+          {
+            "name": "Aldi",
+            "available": false
+          }
+        ]
+      }
+    ],
+    "bookmarked": true
   }
 ]

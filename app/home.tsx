@@ -10,14 +10,15 @@ import {
   SafeAreaView,
   FlatList,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
+  SectionList
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import recipeData from '../data/data.json';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://192.168.1.40:3000';
 
 const Home = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -34,11 +35,9 @@ const Home = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [categoryScrollViewRef, setCategoryScrollViewRef] = useState(null);
 
-  // Fetch data function
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch categories
       const categories = [...new Set(recipeData.recipes.map(recipe => recipe.category[lang]))];
       if (categories.length > 0) {
         setSelectedCategory(categories[0]);
@@ -46,7 +45,6 @@ const Home = ({ navigation }) => {
         filterByCategory(categories[0]);
       }
 
-      // Fetch bookmarked recipes
       const response = await fetch(`${API_URL}/bookmarked`);
       if (!response.ok) {
         throw new Error('Failed to fetch bookmarked recipes');
@@ -80,13 +78,11 @@ const Home = ({ navigation }) => {
     }
   }, [lang]);
 
-  // Refresh function
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchData();
   }, [fetchData]);
 
-  // Focus effect to refresh when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchData();
@@ -147,25 +143,32 @@ const Home = ({ navigation }) => {
   };
 
   const handleSuggestionPress = (item, isIngredient) => {
-    if (isIngredient) {
-      navigation.navigate('Recipe', { 
-        ingredient: item,
-        recipe: null
-      });
-    } else {
-      navigation.navigate('Recipe', { recipe: item });
-    }
+    setIsSearchFocused(false);
+    setTimeout(() => {
+      if (isIngredient) {
+        navigation.navigate('Recipe', { 
+          ingredient: item,
+          recipe: null
+        });
+      } else {
+        navigation.navigate('Recipe', { recipe: item });
+      }
+      
+      setSearchQuery('');
+      setSuggestions({ recipes: [], ingredients: [] });
+    }, 50);
   };
 
   const renderSuggestionItem = ({ item, section }) => (
     <TouchableOpacity 
       style={styles.suggestionItem} 
-      onPress={() => handleSuggestionPress(item, section.key === 'ingredients')}
+      activeOpacity={0.7}
+      onPress={() => handleSuggestionPress(item, section.title === 'ingredients')}
     >
       <Text style={styles.suggestionText}>
-        {section.key === 'recipes' ? item.name[lang] : item.translation[lang]}
+        {section.title === 'recipes' ? item.name[lang] : item.translation[lang]}
       </Text>
-      {section.key === 'ingredients' && (
+      {section.title === 'ingredients' && (
         <Text style={styles.suggestionSubtext}>
           {t('found_in')} {recipeData.recipes.filter(r => 
             r.ingredients.some(i => i.name === item.name)
@@ -179,6 +182,7 @@ const Home = ({ navigation }) => {
     <TouchableOpacity 
       key={recipe.id}
       style={styles.recipeCard}
+      activeOpacity={0.8}
       onPress={() => navigation.navigate('Recipe', { recipe })}
     >
       <Image 
@@ -203,6 +207,7 @@ const Home = ({ navigation }) => {
     <TouchableOpacity 
       key={recipe.id}
       style={styles.recipeCard2}
+      activeOpacity={0.8}
       onPress={() => navigation.navigate('Recipe', { recipe })}
     >
       <Image 
@@ -225,29 +230,25 @@ const Home = ({ navigation }) => {
 
   const categories = [...new Set(recipeData.recipes.map(recipe => recipe.category[lang]))];
 
+  const sectionsData = [
+    { title: 'recipes', data: suggestions.recipes },
+    { title: 'ingredients', data: suggestions.ingredients }
+  ].filter(section => section.data.length > 0);
+
+  const hasSuggestions = suggestions.recipes.length > 0 || suggestions.ingredients.length > 0;
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#4CAF50']}
-            tintColor="#4CAF50"
-          />
-        }
-      >
-        <View style={styles.headerContainer}>
-          <Image 
-            source={require('../assets/images/logo.png')} 
-            style={styles.logo} 
-            resizeMode="contain"
-          />
-          <Text style={styles.appName}>IngrediGO</Text>
-        </View>
+      <View style={styles.headerContainer}>
+        <Image 
+          source={require('../assets/images/logo.png')} 
+          style={styles.logo} 
+          resizeMode="contain"
+        />
+        <Text style={styles.appName}>IngrediGO</Text>
+      </View>
 
+      <View style={styles.searchWrapper}>
         <View style={styles.searchContainer}>
           <Ionicons name="search-outline" size={20} color="#888" style={styles.searchIcon} />
           <TextInput
@@ -259,32 +260,54 @@ const Home = ({ navigation }) => {
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
           />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity 
+              onPress={() => {
+                setSearchQuery('');
+                setSuggestions({ recipes: [], ingredients: [] });
+              }}
+              style={styles.clearButton}
+            >
+              <Ionicons name="close-circle" size={20} color="#888" />
+            </TouchableOpacity>
+          )}
         </View>
 
-        {isSearchFocused && (suggestions.recipes.length > 0 || suggestions.ingredients.length > 0) && (
+        {isSearchFocused && hasSuggestions && (
           <View style={styles.suggestionsContainer}>
-            <FlatList
-              data={[
-                { key: 'recipes', data: suggestions.recipes },
-                { key: 'ingredients', data: suggestions.ingredients }
-              ]}
-              renderItem={({ item: section }) => (
-                <View>
-                  <Text style={styles.suggestionHeader}>
-                    {section.key === 'recipes' ? t('recipes') : t('ingredients')}
-                  </Text>
-                  <FlatList
-                    data={section.data}
-                    renderItem={({ item }) => renderSuggestionItem({ item, section })}
-                    keyExtractor={(item) => section.key === 'recipes' ? item.id.toString() : item.name}
-                  />
-                </View>
+            <SectionList
+              sections={sectionsData}
+              keyExtractor={(item, index) => item.id?.toString() || item.name || index.toString()}
+              renderItem={renderSuggestionItem}
+              renderSectionHeader={({ section: { title } }) => (
+                <Text style={styles.suggestionHeader}>
+                  {title === 'recipes' ? t('recipes') : t('ingredients')}
+                </Text>
               )}
-              keyExtractor={(item) => item.key}
+              style={styles.suggestionsList}
+              keyboardShouldPersistTaps="always"
+              bounces={false}
             />
           </View>
         )}
+      </View>
 
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.scrollContent, 
+          isSearchFocused && hasSuggestions && styles.dimmedContent
+        ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#4CAF50']}
+            tintColor="#4CAF50"
+          />
+        }
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.categoryWrapper}>
           <ScrollView 
             horizontal 
@@ -330,9 +353,13 @@ const Home = ({ navigation }) => {
                 borderColor: '#E8F5E9',
               }
             ]}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {filteredRecipes.map(renderRecipeCard)}
-              </ScrollView>
+              <FlatList
+                horizontal
+                data={filteredRecipes}
+                renderItem={({item}) => renderRecipeCard(item)}
+                keyExtractor={(item) => item.id.toString()}
+                showsHorizontalScrollIndicator={false}
+              />
             </View>
           )}
         </View>
@@ -344,9 +371,13 @@ const Home = ({ navigation }) => {
               <ActivityIndicator size="large" color="#4CAF50" />
             </View>
           ) : bookmarkedRecipes.length > 0 ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {bookmarkedRecipes.map(renderRecipeCard2)}
-            </ScrollView>
+            <FlatList
+              horizontal
+              data={bookmarkedRecipes}
+              renderItem={({item}) => renderRecipeCard2(item)}
+              keyExtractor={(item) => item.id.toString()}
+              showsHorizontalScrollIndicator={false}
+            />
           ) : (
             <View style={styles.emptyBookmarks}>
               <Ionicons name="bookmark-outline" size={40} color="#888" />
@@ -389,10 +420,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 80,
   },
+  dimmedContent: {
+    opacity: 0.3,
+  },
   headerContainer: {
     alignItems: 'center',
     padding: 20,
-    marginVertical: 15,
+    marginTop: 15,
   },
   logo: {
     width: 60,
@@ -404,12 +438,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4CAF50',
   },
+  searchWrapper: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    zIndex: 100,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 20,
     paddingHorizontal: 15,
-    marginBottom: 20,
     height: 50,
     borderRadius: 25,
     backgroundColor: '#F5F5F5',
@@ -422,26 +459,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
+  clearButton: {
+    padding: 5,
+  },
   suggestionsContainer: {
-    marginHorizontal: 20,
-    marginBottom: 10,
-    marginTop: -10,
-    maxHeight: 300,
     backgroundColor: '#FFF',
     borderRadius: 10,
-    elevation: 3,
-    padding: 10,
+    marginTop: 5,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    maxHeight: 240,
+    borderWidth: 1,
+    borderColor: '#EEE',
+  },
+  suggestionsList: {
+    maxHeight: 240,
   },
   suggestionHeader: {
     fontWeight: 'bold',
     fontSize: 16,
-    marginVertical: 5,
+    marginVertical: 10,
     color: '#4CAF50',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    backgroundColor: '#F9F9F9',
   },
   suggestionItem: {
     paddingVertical: 10,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
+    borderBottomColor: '#F0F0F0',
   },
   suggestionText: {
     fontSize: 16,

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   View, Text, Image, TouchableOpacity, StyleSheet,
-  ScrollView, Modal, StatusBar, SafeAreaView, Alert
+  ScrollView, Modal, StatusBar, SafeAreaView, Alert, Linking
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,6 +16,7 @@ const Profile = ({ navigation }) => {
     profession: ''
   });
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showReferencesModal, setShowReferencesModal] = useState(false);
 
   // Load user data from storage
   useEffect(() => {
@@ -84,7 +85,7 @@ const Profile = ({ navigation }) => {
   const allergyOptions = useMemo(() => [
     { label: t('Nuts'), value: 'Nuts' },
     { label: t('Milk'), value: 'Milk' },
-    { label: t('Fish'), value: 'Fish' },
+    { label: t('Fish_allergy'), value: 'Fish_allergy' },
     { label: t('Peanuts'), value: 'Peanuts' },
     { label: t('Shellfish'), value: 'Shellfish' },
     { label: t('Eggs'), value: 'Eggs' },
@@ -212,7 +213,44 @@ const Profile = ({ navigation }) => {
             <Ionicons name="add-outline" size={24} color="#333" />
           </TouchableOpacity>
         </View>
+        <TouchableOpacity style={[styles.dropdownContainer, { marginTop: 12, backgroundColor: '#00796B' }]}
+        onPress={() => setShowReferencesModal(true)}>
+            <Text style={[styles.dropdownText, { color: 'white', fontWeight: 'bold' }]}>View References</Text>
+        </TouchableOpacity>
+        <Modal transparent visible={showReferencesModal} animationType="fade">
+        <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent]}>
+            <Text style={styles.dropdownText}>References Used</Text>
+            <Text style={styles.modalBody}>
+            {'\n'}• <Text style={{ fontWeight: 'bold' }}>NUMBEO </Text>– for price comparisons.{'\n'}
+  • <Text style={{ fontWeight: 'bold' }}>ChatGPT</Text> – to generate descriptions of recipes and identify main ingredients required to cook them.{'\n'}
+  • <Text style={{ fontWeight: 'bold' }}>Expatica France </Text>– for cultural context and general information about food and grocery habits in France.{'\n'}
+  • <Text style={{ fontWeight: 'bold' }}>Statista</Text> – for food availability trends.{'\n'}
+  • <Text style={{ fontWeight: 'bold' }}>Supermarket Availability</Text> – ingredient availability is determined through a combination of methods:{'\n'}
+  {'\t'}1. Visiting supermarkets and speaking with staff about inventory trends.{'\n'}
+  {'\t'}2. Tracking product availability through the official websites of French supermarkets or third-party stock tracking platforms.
+            </Text>
+            <TouchableOpacity
+                onPress={() => setShowReferencesModal(false)}
+                style={[styles.dropdownContainer, { marginTop: 20, backgroundColor: '#00796B' }]}
+            >
+                <Text style={[styles.dropdownText, { color: 'white', fontWeight: 'bold' }]}>Close</Text>
+            </TouchableOpacity>
+            </View>
+        </View>
+        </Modal>
+        <TouchableOpacity
+        onPress={() => Linking.openURL('https://docs.google.com/forms/d/e/1FAIpQLSeJLoPP5A01VXLbYA6Jv41RQswvjDZBa6c0mx6vmqwHGI4Anw/viewform?usp=sharing')}
+        style={[styles.dropdownContainer, { backgroundColor: '#880E4F', marginTop: 12 }]}
+        >
+        <Text style={[styles.dropdownText, { color: 'white', fontWeight: 'bold' }]}>
+            Submit Feedback & Recipes
+        </Text>
+        </TouchableOpacity>
+
+
         <View style={styles.bottomPadding} />
+        
       </ScrollView>
 
       <View style={styles.tabBar}>
@@ -351,6 +389,26 @@ const styles = StyleSheet.create({
   optionItem: { padding: 16 },
   optionText: { fontSize: 18 },
   profileLogout: { flexDirection: 'row', gap: 7 },
+  modalContent: {
+    marginHorizontal: 25,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalBody: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'left',
+    lineHeight: 24,
+  },
+  
 });
 
 export default Profile;

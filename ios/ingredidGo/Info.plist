@@ -49,9 +49,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs access to your location to show nearby stores.</string>
-	<false/>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>This app needs access to your location to show nearby stores.</string>
+
+  <key>UIViewControllerBasedStatusBarAppearance</key>
+  <false/>
 </dict>
 </plist>

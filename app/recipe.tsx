@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = 'http://localhost:3000'; // Adjust based on your server URL
+const API_URL = 'http://192.168.1.40:3000'; // Adjust based on your server URL
 
 const Recipe = () => {
   const route = useRoute();
@@ -425,6 +425,7 @@ const styles = StyleSheet.create({
   },
   priceSliderContainer: {
     flex: 1,
+
   },
   sliderContainer: {
     flex: 1,
@@ -446,21 +447,21 @@ const styles = StyleSheet.create({
   priceLabelsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 6,
+    marginTop: 7,
   },
   priceMin: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#333',
     textAlign: 'left',
   },
   currentPrice: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
     color: '#4CAF50',
     textAlign: 'center',
   },
   priceMax: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#333',
     textAlign: 'right',
   },

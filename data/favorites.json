@@ -1,22 +1,22 @@
 [
   {
-    "id": 102,
-    "name": "土豆 (1公斤)",
+    "id": 502,
+    "name": "Potatoes (1kg)",
     "translation": "Pommes de terre (1kg)",
-    "category": "新鲜",
+    "category": "Fresh",
     "prices": {
       "min": 1.2,
       "max": 2.5,
       "avg": 1.85,
       "currency": "EUR"
     },
-    "recipeId": 1,
-    "recipeName": "炸鱼薯条",
-    "storeName": "Carrefour",
-    "location": "B03",
-    "timeAdded": "2025-04-13T17:13:39.208Z",
+    "recipeId": 5,
+    "recipeName": "Shepherd's Pie",
+    "storeName": "Auchan",
+    "location": "A12",
+    "timeAdded": "2025-04-13T17:31:14.840Z",
     "originalData": {
-      "id": 102,
+      "id": 502,
       "name": "Potatoes (1kg)",
       "translation": {
         "en": "Potatoes (1kg)",
@@ -141,78 +141,8 @@
           "available": true
         }
       ]
-    }
-  },
-  {
-    "id": 502,
-    "name": "Potatoes (1kg)",
-    "translation": "Pommes de terre (1kg)",
-    "category": "Fresh",
-    "prices": {
-      "min": 1.2,
-      "max": 2.5,
-      "avg": 1.85,
-      "currency": "EUR"
     },
-    "recipeId": 5,
-    "recipeName": "Shepherd's Pie",
-    "storeName": "Auchan",
-    "location": "A12",
-    "timeAdded": "2025-04-13T17:31:14.840Z",
-    "originalData": {
-      "id": 502,
-      "name": "Potatoes (1kg)",
-      "translation": {
-        "en": "Potatoes (1kg)",
-        "fr": "Pommes de terre (1kg)",
-        "zh": "土豆 (1公斤)"
-      },
-      "prices": {
-        "min": 1.2,
-        "max": 2.5,
-        "avg": 1.85,
-        "currency": "EUR"
-      },
-      "stores": [
-        {
-          "name": "Lidl",
-          "aisle": "B05",
-          "available": true
-        },
-        {
-          "name": "Auchan",
-          "aisle": "A12",
-          "available": true
-        },
-        {
-          "name": "Carrefour",
-          "aisle": "B03",
-          "available": true
-        },
-        {
-          "name": "Leclerc",
-          "available": false
-        },
-        {
-          "name": "Intermarché",
-          "aisle": "C05",
-          "available": true
-        },
-        {
-          "name": "Monoprix",
-          "available": false
-        },
-        {
-          "name": "Casino",
-          "available": false
-        },
-        {
-          "name": "Aldi",
-          "aisle": "A15",
-          "available": true
-        }
-      ]
-    }
+    "selected": false
   },
   {
     "id": 504,
@@ -283,6 +213,7 @@
           "available": true
         }
       ]
-    }
+    },
+    "selected": false
   }
 ]

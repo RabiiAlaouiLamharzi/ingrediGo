@@ -122,7 +122,7 @@ const NearbyStores = ({ navigation, route }) => {
                       </View>
                       <Text style={styles.ingredientName}>
                         {getIngredientTranslation(ingredientName)}
-                        {storeInfo?.aisle && ` (${t('aisle')}: ${storeInfo.aisle})`}
+                        {/* {storeInfo?.aisle && ` (${t('aisle')}: ${storeInfo.aisle})`} */}
                       </Text>
                     </View>
                   );

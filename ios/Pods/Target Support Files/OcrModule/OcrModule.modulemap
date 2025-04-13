@@ -1,0 +1,6 @@
+module OcrModule {
+  umbrella header "OcrModule-umbrella.h"
+
+  export *
+  module * { export * }
+}
