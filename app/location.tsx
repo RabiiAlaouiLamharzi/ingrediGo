@@ -28,7 +28,6 @@ const storeImages = {
 
 // Mock API service for favorites
 const FavoritesService = {
-  // Get all favorites
   async getFavorites() {
     try {
       // In a real app, you would use fetch here to get data from your API
@@ -40,24 +39,19 @@ const FavoritesService = {
       return await response.json();
     } catch (error) {
       console.error('Error fetching favorites:', error);
-      // Return empty array if we can't fetch favorites
       return [];
     }
   },
   
-  // Add a favorite
   async addFavorite(favorite) {
     try {
-      // Get current favorites first
       const currentFavorites = await this.getFavorites();
-      
-      // Check if favorite already exists
+
       const exists = currentFavorites.some(fav => fav.id === favorite.id);
       if (exists) {
         return { success: true, message: 'Favorite already exists' };
       }
-      
-      // Add new favorite
+
       const updatedFavorites = [...currentFavorites, favorite];
       
       // Save updated favorites
@@ -80,13 +74,10 @@ const FavoritesService = {
     }
   },
   
-  // Remove a favorite
   async removeFavorite(favoriteId) {
     try {
-      // Get current favorites first
       const currentFavorites = await this.getFavorites();
-      
-      // Filter out the favorite to be removed
+
       const updatedFavorites = currentFavorites.filter(fav => fav.id !== favoriteId);
       
       // Save updated favorites
@@ -121,7 +112,6 @@ const Location = ({ navigation, route }) => {
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load favorites when component mounts
   useEffect(() => {
     loadFavorites();
   }, []);
@@ -141,30 +131,24 @@ const Location = ({ navigation, route }) => {
 
   useEffect(() => {
     if (store && recipe && !isLoading) {
-      // Process ingredients - name in myLanguage, translation in localLanguage
       const processedIngredients = store.ingredients.includedIngredients.map(ingredientName => {
         const ingredient = recipe.ingredients.find(ing => ing.name === ingredientName);
         const storeInfo = ingredient?.stores.find(s => s.name === store.name);
-        
-        // Check if this ingredient is in favorites
+
         const isFavorite = favorites.some(fav => fav.id === (ingredient?.id || ingredientName));
         
         return {
           id: ingredient?.id || ingredientName,
-          // Primary name in user's language (myLanguage)
           name: ingredient?.translation?.[myLanguage] || ingredientName,
-          // Translation in local language
           translation: ingredient?.translation?.[localLanguage] || ingredientName,
           category: getCategoryFromIngredient(ingredientName),
           location: storeInfo?.aisle || 'N/A',
           prices: ingredient?.prices || null,
           isFavorite: isFavorite,
-          // Store original ingredient data for saving to favorites
           originalData: ingredient
         };
       });
 
-      // Check if we have any valid ingredients with locations
       const hasValidIngredients = processedIngredients.some(ing => ing.location !== 'N/A');
       
       if (processedIngredients.length === 0 || !hasValidIngredients) {
@@ -242,11 +226,9 @@ const Location = ({ navigation, route }) => {
   };
 
   const toggleFavorite = async (id) => {
-    // Find the ingredient in the list
     const ingredient = ingredientsList.find(item => item.id === id);
     if (!ingredient) return;
 
-    // Create updated ingredients list with toggled favorite status
     const updatedIngredientsList = ingredientsList.map(item => 
       item.id === id ? {...item, isFavorite: !item.isFavorite} : item
     );
@@ -254,10 +236,8 @@ const Location = ({ navigation, route }) => {
 
     try {
       if (ingredient.isFavorite) {
-        // If it was already a favorite, remove it
         await FavoritesService.removeFavorite(id);
       } else {
-        // If it wasn't a favorite, add it
         const favoriteData = {
           id: ingredient.id,
           name: ingredient.name,
@@ -275,13 +255,11 @@ const Location = ({ navigation, route }) => {
         await FavoritesService.addFavorite(favoriteData);
       }
       
-      // Reload favorites to ensure UI is in sync with server
       loadFavorites();
     } catch (error) {
       console.error('Error toggling favorite:', error);
       Alert.alert('Error', 'Could not update favorites.');
-      
-      // Revert UI change if operation failed
+
       setIngredientsList(ingredientsList);
     }
   };
@@ -378,9 +356,7 @@ const Location = ({ navigation, route }) => {
           <View key={ingredient.id} style={styles.itemCardTop}>
             <View style={styles.itemCard}>
               <View style={styles.textContainer}>
-                {/* Primary name in myLanguage */}
                 <Text style={styles.itemName}>{ingredient.name}</Text>
-                {/* Translation in localLanguage */}
                 <Text style={styles.itemTranslation}>{ingredient.translation}</Text>
               </View>
               

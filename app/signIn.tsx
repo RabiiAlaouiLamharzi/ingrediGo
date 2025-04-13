@@ -18,7 +18,6 @@ const SignIn = ({ navigation }) => {
     setIsLoading(true);
     setErrorMessage('');
 
-    // Check if guest login
     if (username === 'usertest' && password === 'usertest') {
       try {
         await AsyncStorage.setItem('userData', JSON.stringify({
@@ -31,7 +30,6 @@ const SignIn = ({ navigation }) => {
         setErrorMessage('Failed to save user data');
       }
     } else if (username && password) {
-      // All other credentials are invalid
       setErrorMessage('Invalid credentials. Please try again or login as guest.');
     } else {
       setErrorMessage('Please enter both username and password');
@@ -54,7 +52,6 @@ const SignIn = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Login Popup Modal */}
       <Modal transparent visible={showLoginPopup} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.loginPopup}>

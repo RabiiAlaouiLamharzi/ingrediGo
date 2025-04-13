@@ -1,17 +1,3 @@
-{
-  "name": "RCTRequired",
-  "version": "0.76.7",
-  "summary": "-",
-  "homepage": "https://reactnative.dev/",
-  "license": "MIT",
-  "authors": "Meta Platforms, Inc. and its affiliates",
-  "platforms": {
-    "ios": "15.1"
-  },
-  "source": {
-    "git": "https://github.com/facebook/react-native.git",
-    "tag": "v0.76.7"
-  },
-  "source_files": "**/*.{c,h,m,mm,cpp}",
-  "header_dir": "RCTRequired"
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:f6d961b5077194c274737139b6a276b582252a2b8e35d8d7b48ce0acc78a93ae
+size 398

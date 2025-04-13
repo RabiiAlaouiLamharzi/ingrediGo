@@ -1,22 +1,3 @@
-{
-  "name": "React-runtimeexecutor",
-  "version": "0.76.7",
-  "summary": "-",
-  "homepage": "https://reactnative.dev/",
-  "license": "MIT",
-  "authors": "Meta Platforms, Inc. and its affiliates",
-  "platforms": {
-    "ios": "15.1"
-  },
-  "source": {
-    "git": "https://github.com/facebook/react-native.git",
-    "tag": "v0.76.7"
-  },
-  "source_files": "**/*.{cpp,h}",
-  "header_dir": "ReactCommon",
-  "dependencies": {
-    "React-jsi": [
-      "0.76.7"
-    ]
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:db18d9fe7853c2bfd405a4d3bc62547841f88cc0faf0db155818575251a78418
+size 466

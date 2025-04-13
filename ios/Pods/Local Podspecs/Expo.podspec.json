@@ -1,28 +1,3 @@
-{
-  "name": "Expo",
-  "version": "52.0.39",
-  "summary": "The Expo SDK",
-  "description": "The Expo SDK",
-  "license": "MIT",
-  "authors": "Expo",
-  "homepage": "https://github.com/expo/expo/tree/main/packages/expo",
-  "platforms": {
-    "ios": "15.1",
-    "osx": "10.15",
-    "tvos": "15.1"
-  },
-  "source": {
-    "git": "https://github.com/expo/expo.git"
-  },
-  "static_framework": true,
-  "header_dir": "Expo",
-  "dependencies": {
-    "ExpoModulesCore": [
-
-    ]
-  },
-  "source_files": "ios/**/*.{h,m,swift}",
-  "user_target_xcconfig": {
-    "HEADER_SEARCH_PATHS": "\"${PODS_CONFIGURATION_BUILD_DIR}/Expo/Swift Compatibility Header\""
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:65bd2d7b840f5614c4f7e86ccbc33d27276c53650d52bd352ec98f8f4a9816be
+size 644

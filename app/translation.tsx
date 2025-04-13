@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, Pressable, StyleSheet, StatusBar, SafeAreaView, Button, Dimensions } from 'react-native';
 import { CameraView, CameraType } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
-import OcrModule from '../modules/ocr-module'; // Assume this is an OCR module
-import FastTranslator from 'fast-mlkit-translate-text'; // Assume this is translation module
+import OcrModule from '../modules/ocr-module';
+import FastTranslator from 'fast-mlkit-translate-text';
 import { useTranslation } from 'react-i18next';
 
 const Translation = ({ navigation }) => {
@@ -27,15 +27,14 @@ const Translation = ({ navigation }) => {
     zh: 'Chinese',
   };
   
-  // Take a picture
   const takePicture = async () => {
-    setText([]); // Clear old text
+    setText([]);
     setTranslatedText(null);
 
     if (!cameraRef.current) return;
 
     const photo = await cameraRef.current.takePictureAsync({
-      skipProcessing: true, // Get raw image
+      skipProcessing: true,
     });
 
     if (photo?.uri) {
@@ -43,7 +42,6 @@ const Translation = ({ navigation }) => {
     }
   };
 
-  /// Recognize text from image (OCR)
 const recognizeTextFromImage = async (path: string, languageCode: string) => {
     setIsLoading(true);
     try {
@@ -51,28 +49,25 @@ const recognizeTextFromImage = async (path: string, languageCode: string) => {
       setText(recognizedText);
       console.log("Recognized Text:", recognizedText);
   
-      // If recognized text is found, attempt translation
       if (recognizedText && recognizedText.length > 0) {
-        translateAll(recognizedText); // Proceed to translation
+        translateAll(recognizedText);
       } else {
-        // If no text is recognized, handle the case and move forward
-        setTranslatedText(null); // Set translated text to null
+        setTranslatedText(null);
         navigation.navigate('Translated', { translatedText: null });
       }
     } catch (err) {
       console.error(err);
       setText([]);
-      setTranslatedText(null); // If error occurs, reset to null
+      setTranslatedText(null);
       navigation.navigate('Translated', { translatedText: null });
     }
     setIsLoading(false);
   };
   
-  // Translate recognized text
   const translateAll = async (recognizedText: string[]) => {
     try {
-      const sourceLang = languageMap[localLanguage];; // Example, could be dynamically detected
-      const targetLang = languageMap[currentLanguage];; // Desired translation language
+      const sourceLang = languageMap[localLanguage];;
+      const targetLang = languageMap[currentLanguage];;
   
       await FastTranslator.prepare({
         source: sourceLang,
@@ -89,25 +84,20 @@ const recognizeTextFromImage = async (path: string, languageCode: string) => {
         await FastTranslator.downloadLanguageModel('Chinese');
       }
   
-      const translations = await FastTranslator.translate(recognizedText); // Translate as a single string
-      setTranslatedText(translations); // Set as a single string if translation exists
+      const translations = await FastTranslator.translate(recognizedText);
+      setTranslatedText(translations);
   
       console.log("Translations:", translations);
   
-      // Always navigate to 'Translated' screen, regardless of translation success
       navigation.navigate('Translated', { translatedText: translations || null });
     } catch (err) {
       console.error('Translation error:', err);
-      setTranslatedText(null); // If translation fails, set to null
+      setTranslatedText(null);
   
-      // Always navigate to 'Translated' screen, even on error
       navigation.navigate('Translated', { translatedText: null });
     }
   };
   
-
-
-  // Style for layout
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
   const [imageSize, setImageSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
   const [scaledPositions, setScaledPositions] = useState<any[]>([]);
@@ -172,7 +162,6 @@ const recognizeTextFromImage = async (path: string, languageCode: string) => {
                 </View>
                 
             <View style={styles.buttonContainer}>
-                {/* Camera button for taking picture */}
                 <Pressable onPress={() => takePicture()}>
                 <View style={{ backgroundColor: "transparent", borderWidth: 5, borderColor: "white", width: 65, height: 65, borderRadius: 45, alignItems: "center", justifyContent: "center" }}>
                     <View style={{ width: 50, height: 50, borderRadius: 50, backgroundColor: "white" }} />
@@ -186,28 +175,24 @@ const recognizeTextFromImage = async (path: string, languageCode: string) => {
  <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
             <Ionicons name="home-outline" size={24} color="#888" />
-            {/* <Text style={styles.tabLabel}>Home</Text> */}
             <Text style={styles.tabLabel}>{t('home')}</Text>
 
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Translator')}>
             <Ionicons name="camera" size={24} color="#4CAF50" />
-            {/* <Text style={styles.tabLabel}>Translator</Text> */}
             <Text style={styles.tabLabel}>{t('translator')}</Text>
 
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Favorites')}>
             <Ionicons name="heart-outline" size={24} color="#888" />
-            {/* <Text style={[styles.tabLabel, styles.activeTab]}>Favorites</Text> */}
             <Text style={styles.tabLabel}>{t('favorite')}</Text>
 
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Profile')}>
             <Ionicons name="person-outline" size={24} color="#888" />
-            {/* <Text style={styles.tabLabel}>Profile</Text> */}
             <Text style={styles.tabLabel}>{t('profile')}</Text>
             
         </TouchableOpacity>

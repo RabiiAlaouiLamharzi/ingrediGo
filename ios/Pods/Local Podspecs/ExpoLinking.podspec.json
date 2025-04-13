@@ -1,27 +1,3 @@
-{
-  "name": "ExpoLinking",
-  "version": "7.0.5",
-  "summary": "Create and open deep links universally",
-  "description": "Create and open deep links universally",
-  "license": "MIT",
-  "authors": "650 Industries, Inc.",
-  "homepage": "https://docs.expo.dev/versions/latest/sdk/linking",
-  "platforms": {
-    "ios": "15.1",
-    "tvos": "15.1"
-  },
-  "source": {
-    "git": "https://github.com/expo/expo.git"
-  },
-  "static_framework": true,
-  "dependencies": {
-    "ExpoModulesCore": [
-
-    ]
-  },
-  "pod_target_xcconfig": {
-    "DEFINES_MODULE": "YES",
-    "SWIFT_COMPILATION_MODE": "wholemodule"
-  },
-  "source_files": "**/*.{h,m,mm,swift,hpp,cpp}"
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:13344bdb68e804a056225e5da0d1a6cc39c6d1af1ce8b9c76adcfec1a84cffa6
+size 652

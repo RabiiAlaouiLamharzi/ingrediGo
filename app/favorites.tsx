@@ -4,8 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 
-// Your server URL - replace with your actual server address
-const SERVER_URL = 'http://192.168.1.40:3000';
+const SERVER_URL = 'http://localhost:3000';
 
 const Favorites = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -20,7 +19,6 @@ const Favorites = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const timerRef = useRef(null);
 
-  // Load favorites from server
   const loadFavorites = async () => {
     setIsLoading(true);
     try {
@@ -43,7 +41,6 @@ const Favorites = ({ navigation }) => {
     }
   };
 
-  // Save favorites to server
   const saveFavorites = async (items) => {
     try {
       console.log('Saving favorites to server:', items);
@@ -68,13 +65,11 @@ const Favorites = ({ navigation }) => {
     }
   };
 
-  // Use useFocusEffect to reload data every time the screen gains focus
   useFocusEffect(
     React.useCallback(() => {
       console.log('Favorites screen focused - reloading data');
       const initializeFavorites = async () => {
         const loadedFavorites = await loadFavorites();
-        // Add selected property to each item
         const favoritesWithSelected = loadedFavorites.map(item => ({
           ...item,
           selected: false
@@ -85,7 +80,6 @@ const Favorites = ({ navigation }) => {
       initializeFavorites();
       
       return () => {
-        // Cleanup when screen loses focus
         if (timerRef.current) {
           clearInterval(timerRef.current);
         }
@@ -109,8 +103,7 @@ const Favorites = ({ navigation }) => {
         name: item.originalData?.translation?.[myLanguage] || item.name,
         translation: item.originalData?.translation || { [myLanguage]: item.name },
         prices: item.prices,
-        stores: item.originalData?.stores || [], // Make sure stores array exists
-        // Include all other necessary fields
+        stores: item.originalData?.stores || [],
         ...item.originalData || item
       }));
   
@@ -119,7 +112,6 @@ const Favorites = ({ navigation }) => {
       return;
     }
   
-    // Create a mock recipe structure that NearbyStores expects
     const mockRecipe = {
       id: 'favorites-selection',
       name: {
@@ -192,26 +184,21 @@ const Favorites = ({ navigation }) => {
   }, []);
 
   const renderFavoriteItem = (item) => {
-    // Calculate progress width based on average price between min and max
     const minPrice = item.prices?.min || 0;
     const maxPrice = item.prices?.max || 1;
     const avgPrice = item.prices?.avg || (minPrice + maxPrice) / 2;
     
     const progressWidth = ((avgPrice - minPrice) / (maxPrice - minPrice)) * 100;
   
-    // Get the correct name based on user's preferred language
     let displayName;
     if (item.originalData) {
-      // If we have the originalData with proper translations
       displayName = item.originalData.translation?.[myLanguage] || 
                    item.originalData.name;
     } else {
-      // Fallback to the simpler structure if originalData doesn't exist
       displayName = myLanguage === 'en' ? item.name : 
                    (item.translation || item.name);
     }
   
-    // Get local translation (French by default)
     let localTranslation;
     if (item.originalData) {
       localTranslation = item.originalData.translation?.[localLanguage] || 

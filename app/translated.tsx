@@ -7,20 +7,18 @@ export type ScrollViewRef = ScrollView & {
   };
 
 const Translated = ({ navigation, route }) => {
-  const scrollViewRef = useRef<ScrollViewRef | null>(null); // Create ref for ScrollView
+  const scrollViewRef = useRef<ScrollViewRef | null>(null);
   
   useEffect(() => {
     setTimeout(() => {
-      // Flash the scroll indicators after 500ms
       scrollViewRef.current?.flashScrollIndicators();
     }, 1000);
   }, []);
 
-  const { translatedText } = route.params;  // Assume the image URI, text, and positions are passed via route params
+  const { translatedText } = route.params; 
   
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
   
-  // Scaling the positions according to the image and screen size
   useEffect(() => {
     console.log('Route Params:', route.params);
   }, [screenWidth, screenHeight]);
@@ -28,21 +26,19 @@ const Translated = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-    
-      {/* Title */}
+
       <View style={styles.overlayContainer}>
         <Text style={styles.titleText}>Translation Results</Text>
         <Text style={styles.subtitleText}></Text>
       </View>
 
-      {/* Main translation content */}
       <View style={styles.translationContainer}>
         {translatedText ? (
           <ScrollView
             style={styles.scrollableContainer}
             ref={scrollViewRef}    
             contentContainerStyle={styles.scrollableContent}
-            persistentScrollbar={true}  // Ensure scroll indicator is visible
+            persistentScrollbar={true}
           >
             <Text style={styles.translationText}>
               {translatedText}
@@ -53,12 +49,10 @@ const Translated = ({ navigation, route }) => {
         )}
       </View>
 
-      {/* Translate Again Button */}
       <TouchableOpacity onPress={() => navigation.navigate('Translator')} style={styles.button}>
         <Text style={styles.buttonText}>Translate again</Text>
       </TouchableOpacity>
 
-      {/* Bottom Tab Bar */}
       <View style={styles.tabBar}>
         <TouchableOpacity style={styles.tabItem} onPress={() => navigation.navigate('Home')}>
           <Ionicons name="home-outline" size={24} color="#888" />
@@ -134,8 +128,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(34, 164, 93, 1)',
     borderRadius: 47.34219,
     position: "absolute",
-    bottom: 132, // increased a bit to avoid overlapping with tab bar
-    alignSelf: 'center', // centers it horizontally
+    bottom: 132,
+    alignSelf: 'center',
     flexDirection: "row", 
     justifyContent: "center", 
     paddingHorizontal: 30,
@@ -146,12 +140,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3.78738 },
   },  
   buttonText: {
-    fontFamily: 'Poppins',  // Make sure 'Poppins' is available
+    fontFamily: 'Poppins',
     fontSize: 16.09635,
     letterSpacing: 0.75748,
     textAlign: 'center',
     color: 'white',
-    marginVertical: 5,  // Center the text vertically
+    marginVertical: 5, 
   },
   translationContainer: {
     flex: 1,
@@ -173,12 +167,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   scrollableContainer: {
-    width: '100%',  // Ensures ScrollView takes full width
-    maxHeight: '70%',  // Adjust based on your preference, limiting the height before scrolling kicks in
-    paddingTop: 10,  // Optional: Add some padding at the top
+    width: '100%', 
+    maxHeight: '70%',
+    paddingTop: 10,
   },
   scrollableContent: {
-    paddingBottom: 10,  // Optional: adds some padding to the bottom if needed
+    paddingBottom: 10,
   },
 });
 

@@ -18,7 +18,6 @@ const Profile = ({ navigation }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showReferencesModal, setShowReferencesModal] = useState(false);
 
-  // Load user data from storage
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -151,7 +150,6 @@ const Profile = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
       <ScrollView style={styles.container}>
-        {/* Header with logout button */}
         <View style={styles.headerContainer}>
         </View>
 
@@ -272,7 +270,6 @@ const Profile = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Modals */}
       <Modal transparent visible={showMyLanguageDropdown} animationType="fade">
         <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowMyLanguageDropdown(false)}>
           <View style={[styles.languageDropdown, { top: 220 }]}>

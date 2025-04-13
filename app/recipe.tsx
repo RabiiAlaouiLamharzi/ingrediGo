@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = 'http://192.168.1.40:3000'; // Adjust based on your server URL
+const API_URL = 'http://localhost:3000';
 
 const Recipe = () => {
   const route = useRoute();
@@ -28,7 +28,6 @@ const Recipe = () => {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
 
-  // Always start with bookmark unselected
   const [bookmarked, setBookmarked] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -54,21 +53,17 @@ const Recipe = () => {
     productImages.push(require('../assets/images/background.png'));
   }
 
-  // Check if recipe is already bookmarked on component mount
   useEffect(() => {
     checkIfBookmarked();
   }, []);
 
-  // Check if this recipe is already bookmarked
   const checkIfBookmarked = async () => {
     try {
       if (!recipe) return;
-      
-      // Read the current bookmarked recipes
+
       const response = await axios.get(`${API_URL}/bookmarked`);
       const bookmarkedRecipes = response.data || [];
-      
-      // Check if current recipe is in the bookmarked list
+
       const isBookmarked = bookmarkedRecipes.some(item => item.id === recipe.id);
       setBookmarked(isBookmarked);
     } catch (error) {
@@ -86,17 +81,14 @@ const Recipe = () => {
   const toggleBookmark = async () => {
     try {
       if (!recipe) return;
-      
-      // Toggle bookmark state for UI
+
       const newBookmarkState = !bookmarked;
       setBookmarked(newBookmarkState);
-      
-      // Read current bookmarked recipes
+
       const response = await axios.get(`${API_URL}/bookmarked`);
       let bookmarkedRecipes = response.data || [];
       
       if (newBookmarkState) {
-        // Add to bookmarked recipes if not already there
         if (!bookmarkedRecipes.some(item => item.id === recipe.id)) {
           const recipeToSave = {
             id: recipe.id,
@@ -109,16 +101,13 @@ const Recipe = () => {
           bookmarkedRecipes.push(recipeToSave);
         }
       } else {
-        // Remove from bookmarked recipes
         bookmarkedRecipes = bookmarkedRecipes.filter(item => item.id !== recipe.id);
       }
-      
-      // Save updated bookmarked recipes
+
       await axios.post(`${API_URL}/bookmarked`, bookmarkedRecipes);
       
     } catch (error) {
       console.error('Error updating bookmarked recipes:', error);
-      // Revert UI state if saving failed
       setBookmarked(!bookmarked);
       Alert.alert('Error', 'Failed to update bookmarks');
     }
@@ -251,13 +240,13 @@ const Recipe = () => {
                   onPress={() => navigation.navigate('NearbyStores', {
                     selectedItems: Object.keys(selections).filter(key => selections[key]),
                     ingredientData: ingredientsData,
-                    recipe: recipe || { // If no recipe, create a mock recipe from the ingredient
+                    recipe: recipe || {
                       name: {
                         en: ingredient?.name || "Selected Ingredients",
                         fr: ingredient?.translation?.fr || "Ingrédients sélectionnés",
                         zh: ingredient?.translation?.zh || "选定的成分"
                       },
-                      ingredients: [ingredient] // Wrap single ingredient in array
+                      ingredients: [ingredient]
                     }
                   })}
                 >

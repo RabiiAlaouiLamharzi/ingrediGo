@@ -1,16 +1,3 @@
-{
-  "platforms": [
-    "apple",
-    "android"
-  ],
-  "apple": {
-    "modules": [
-      "OcrModule"
-    ]
-  },
-  "android": {
-    "modules": [
-      "expo.modules.ocrmodule.OcrModule"
-    ]
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:084587365da7b1750844b8c91cdeeb45e738cb346f2176a62e3e0fba524602a6
+size 195
