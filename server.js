@@ -8,7 +8,6 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-// Path to data files
 const FAVORITES_FILE = path.join(__dirname, 'data', 'favorites.json');
 const BOOKMARKED_FILE = path.join(__dirname, 'data', 'bookmarked.json');
 
@@ -27,7 +26,6 @@ if (!fs.existsSync(BOOKMARKED_FILE)) {
   fs.writeFileSync(BOOKMARKED_FILE, JSON.stringify([]));
 }
 
-// Favorites endpoints
 app.get('/favorites', (req, res) => {
   try {
     const favorites = JSON.parse(fs.readFileSync(FAVORITES_FILE, 'utf8'));
@@ -48,7 +46,6 @@ app.post('/favorites', (req, res) => {
   }
 });
 
-// Bookmarked recipes endpoints
 app.get('/bookmarked', (req, res) => {
   try {
     if (!fs.existsSync(BOOKMARKED_FILE)) {

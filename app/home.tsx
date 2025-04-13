@@ -34,11 +34,9 @@ const Home = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [categoryScrollViewRef, setCategoryScrollViewRef] = useState(null);
 
-  // Fetch data function
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch categories
       const categories = [...new Set(recipeData.recipes.map(recipe => recipe.category[lang]))];
       if (categories.length > 0) {
         setSelectedCategory(categories[0]);
@@ -46,7 +44,6 @@ const Home = ({ navigation }) => {
         filterByCategory(categories[0]);
       }
 
-      // Fetch bookmarked recipes
       const response = await fetch(`${API_URL}/bookmarked`);
       if (!response.ok) {
         throw new Error('Failed to fetch bookmarked recipes');
@@ -80,13 +77,11 @@ const Home = ({ navigation }) => {
     }
   }, [lang]);
 
-  // Refresh function
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchData();
   }, [fetchData]);
 
-  // Focus effect to refresh when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchData();
