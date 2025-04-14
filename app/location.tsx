@@ -585,6 +585,45 @@ const styles = StyleSheet.create({
   heartButton: {
     padding: 0,
   },
+  noIngredientsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  noIngredientsImage: {
+    width: Dimensions.get('window').width * 0.6,
+    height: Dimensions.get('window').width * 0.6,
+    marginBottom: 30,
+  },
+  noIngredientsTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  noIngredientsText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 30,
+    lineHeight: 24,
+  },
+  backToStoresButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 30,
+  },
+  backToStoresButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  heartButton: {
+    padding: 5,
+  },
 });
 
 export default Location;
