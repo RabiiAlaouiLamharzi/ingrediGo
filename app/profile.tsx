@@ -218,7 +218,7 @@ const Profile = ({ navigation }) => {
         <Modal transparent visible={showReferencesModal} animationType="fade">
         <View style={styles.modalOverlay}>
             <View style={[styles.modalContent]}>
-            <Text style={styles.dropdownText}>References Used</Text>
+            <Text style={styles.dropdownText}>{t('References Used')}</Text>
             <Text style={styles.modalBody}>
             {'\n'}• <Text style={{ fontWeight: 'bold' }}>NUMBEO </Text>– for price comparisons.{'\n'}
   • <Text style={{ fontWeight: 'bold' }}>ChatGPT</Text> – to generate descriptions of recipes and identify main ingredients required to cook them.{'\n'}
@@ -232,7 +232,7 @@ const Profile = ({ navigation }) => {
                 onPress={() => setShowReferencesModal(false)}
                 style={[styles.dropdownContainer, { marginTop: 20, backgroundColor: '#00796B' }]}
             >
-                <Text style={[styles.dropdownText, { color: 'white', fontWeight: 'bold' }]}>Close</Text>
+                <Text style={[styles.dropdownText, { color: 'white', fontWeight: 'bold' }]}>{t('close')}</Text>
             </TouchableOpacity>
             </View>
         </View>

@@ -18,7 +18,7 @@ import recipeData from '../data/data.json';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 
-const API_URL = 'http://192.168.1.40:3000';
+const API_URL = 'http://192.168.1.139:3000';
 
 const Home = ({ navigation }) => {
   const { t, i18n } = useTranslation();

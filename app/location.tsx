@@ -13,7 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
-const SERVER_URL = 'http://192.168.1.40:3000'; // Adjust based on your server URL
+const SERVER_URL = 'http://192.168.1.139:3000'; // Adjust based on your server URL
 
 const storeImages = {
     Lidl: require('../assets/images/lidl.png'),

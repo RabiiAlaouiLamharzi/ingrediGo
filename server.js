@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const app = express();
 const PORT = 3000;
-const IP = "192.168.1.40";
+const IP = "192.168.1.139";
 
 app.use(cors());
 app.use(express.json());

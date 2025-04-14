@@ -1,6 +1,0 @@
-module Pods_ingredidGo {
-  umbrella header "Pods-ingredidGo-umbrella.h"
-
-  export *
-  module * { export * }
-}

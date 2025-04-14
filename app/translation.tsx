@@ -74,15 +74,15 @@ const recognizeTextFromImage = async (path: string, languageCode: string) => {
         target: targetLang,
         downloadIfNeeded: false,
       });
-      if (!FastTranslator.isLanguageDownloaded('French')) {
-        await FastTranslator.downloadLanguageModel('French');
-      }
-      if (!FastTranslator.isLanguageDownloaded('English')) {
-        await FastTranslator.downloadLanguageModel('English');
-      }
-      if (!FastTranslator.isLanguageDownloaded('Chinese')) {
-        await FastTranslator.downloadLanguageModel('Chinese');
-      }
+    //   if (!FastTranslator.isLanguageDownloaded('French')) {
+    //     await FastTranslator.downloadLanguageModel('French');
+    //   }
+    //   if (!FastTranslator.isLanguageDownloaded('English')) {
+    //     await FastTranslator.downloadLanguageModel('English');
+    //   }
+    //   if (!FastTranslator.isLanguageDownloaded('Chinese')) {
+    //     await FastTranslator.downloadLanguageModel('Chinese');
+    //   }
   
       const translations = await FastTranslator.translate(recognizedText);
       setTranslatedText(translations);
