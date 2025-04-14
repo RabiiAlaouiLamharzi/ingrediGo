@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 
-const SERVER_URL = 'http://localhost:3000';
+const SERVER_URL = 'http://192.168.1.40:3000'; // Replace with your server URL
 
 const Favorites = ({ navigation }) => {
   const { t, i18n } = useTranslation();

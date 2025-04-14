@@ -213,7 +213,7 @@ const Profile = ({ navigation }) => {
         </View>
         <TouchableOpacity style={[styles.dropdownContainer, { marginTop: 12, backgroundColor: '#00796B' }]}
         onPress={() => setShowReferencesModal(true)}>
-            <Text style={[styles.dropdownText, { color: 'white', fontWeight: 'bold' }]}>View References</Text>
+            <Text style={[styles.dropdownText, { color: 'white', fontWeight: 'bold' }]}>t('View References')</Text>
         </TouchableOpacity>
         <Modal transparent visible={showReferencesModal} animationType="fade">
         <View style={styles.modalOverlay}>
@@ -242,7 +242,7 @@ const Profile = ({ navigation }) => {
         style={[styles.dropdownContainer, { backgroundColor: '#880E4F', marginTop: 12 }]}
         >
         <Text style={[styles.dropdownText, { color: 'white', fontWeight: 'bold' }]}>
-            Submit Feedback & Recipes
+            t('Submit Feedback & Recipes')
         </Text>
         </TouchableOpacity>
 

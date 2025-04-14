@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://192.168.1.40:3000'; // Replace with your actual API URL
 
 const Recipe = () => {
   const route = useRoute();
